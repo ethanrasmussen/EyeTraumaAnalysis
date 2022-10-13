@@ -20,5 +20,5 @@ def rotate_img(img_CV2, deg:int):
 def rotated_segment(img, deg:int, widthPixels:int, center:tuple):
     imgr = rotate_img(img, deg)
     mask = np.zeros(imgr.shape, dtype='uint8')
-    cv2.rectangle(mask, (center[0], center[1] - (widthPixels / 2)), (center[0] + 25000000, center[1] + (widthPixels / 2)), (255,255,255), -1)
+    cv2.rectangle(mask, (center[0], int(center[1] - (widthPixels / 2))), (center[0] + 25000000, int(center[1] + (widthPixels / 2))), (255,255,255), -1)
     return np.where(mask, imgr, np.zeros(imgr.shape, dtype='uint8'))
