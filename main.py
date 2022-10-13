@@ -22,3 +22,11 @@ def rotated_segment(img, deg:int, widthPixels:int, center:tuple):
     mask = np.zeros(imgr.shape, dtype='uint8')
     cv2.rectangle(mask, (center[0], int(center[1] - (widthPixels / 2))), (center[0] + 25000000, int(center[1] + (widthPixels / 2))), (255,255,255), -1)
     return np.where(mask, imgr, np.zeros(imgr.shape, dtype='uint8'))
+
+def segment_by_deg(img, degInterval:int, widthPixels:int, center:tuple):
+    deg = 0
+    segments = []
+    for i in range(int(360 / degInterval)):
+        segments.append(rotated_segment(img, deg, widthPixels, center))
+        deg += degInterval
+    return segments
