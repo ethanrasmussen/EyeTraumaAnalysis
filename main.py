@@ -66,3 +66,39 @@ def horizontal_display(segments, cropped:bool, center=None, widthPixels=None):
     for i in range(len(imgs)):
         plt.subplot(1, 2*len(imgs), i + 1)
         plt.imshow(imgs[i])
+
+def recenter_img(img, center):
+    x1,y1,x2,y2 = 0,0,0,0
+    ## img_cv2 = img.img
+    ## center = img.center
+    ## height, width = img_cv2.shape[0], img_cv2.shape[1]
+    height, width = img.shape[0], img.shape[1]
+    wseg1, wseg2 = center[0], (width - center[0])
+    hseg1, hseg2 = center[1], (height - center[1])
+    wdiff = max([wseg1, wseg2]) - min([wseg1, wseg2])
+    if wseg1 > wseg2:
+        x1 = x1 + wdiff
+    if wseg2 > wseg1:
+        x2 = x2 - wdiff
+    hdiff = max([hseg1, hseg2]) - min([hseg1, hseg2])
+    if hseg2 > hseg1:
+        y2 = y2 - hdiff
+    if hseg1 > hseg2:
+        y1 = y1 + hdiff
+    ## return img_cv2[x1:y1, x2:y2]
+    return img[x1:y1, x2:y2]
+
+def canny_edges(image_img):
+    return cv2.Canny(image_img, 100, 200)
+
+def show_canny(img_img):
+    im = canny_edges(img_img)
+    plt.subplot(121), plt.imshow(img_img, cmap='gray')
+    plt.title('Original Image'), plt.xticks([]), plt.yticks([])
+    plt.subplot(122), plt.imshow(im, cmap='gray')
+    plt.title('Edge Image'), plt.xticks([]), plt.yticks([])
+    plt.show()
+
+# recenter img around pupil
+# color channel & concatenation
+# canny edge detection / binning
