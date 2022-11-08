@@ -23,7 +23,7 @@ class Image:
 
     def __init__(self, filename: str):
         index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
-        self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[..., [2,1,0] ]
+        self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[..., [2,1,0]]
         if "_li" in filename:
             self.center = (li_df["centerX"][index], li_df["centerY"][index])
         elif "_h" in filename:
