@@ -14612,20 +14612,48 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 </div>
 
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[83]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">image</span> <span class="o">=</span> <span class="n">EyeTraumaAnalysis</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;data/1.jpg&#39;</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">image</span> <span class="o">=</span> <span class="n">EyeTraumaAnalysis</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="s1">&#39;data/00001.jpg&#39;</span><span class="p">)</span>
 </pre></div>
 
      </div>
 </div>
 </div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+Input <span class="ansi-green-fg">In [1]</span>, in <span class="ansi-cyan-fg">&lt;cell line: 1&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">----&gt; 1</span> image <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">EyeTraumaAnalysis</span><span style="color: rgb(98,98,98)">.</span>Image(<span style="color: rgb(175,0,0)">&#39;</span><span style="color: rgb(175,0,0)">data/00001.jpg</span><span style="color: rgb(175,0,0)">&#39;</span>)
+
+<span class="ansi-red-fg">NameError</span>: name &#39;EyeTraumaAnalysis&#39; is not defined</pre>
+</div>
+</div>
+
+</div>
+
 </div>
 
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -14755,7 +14783,7 @@ class="
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[86]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">EyeTraumaAnalysis</span><span class="o">.</span><span class="n">rotated_segment</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="mi">218</span><span class="p">,</span> <span class="n">widthPixels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">center</span><span class="p">))</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">EyeTraumaAnalysis</span><span class="o">.</span><span class="n">rotated_segment</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">img</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="mi">218</span><span class="p">,</span> <span class="n">width_px</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">center</span><span class="p">))</span>
 </pre></div>
 
      </div>
@@ -17309,7 +17337,7 @@ class="
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[89]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">cropped</span> <span class="o">=</span> <span class="n">EyeTraumaAnalysis</span><span class="o">.</span><span class="n">cropped_segments</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">img</span><span class="p">[</span><span class="o">...</span><span class="p">,[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span> <span class="n">interval_deg</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">width_p</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">image</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">cropped</span> <span class="o">=</span> <span class="n">EyeTraumaAnalysis</span><span class="o">.</span><span class="n">cropped_segments</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">img</span><span class="p">[</span><span class="o">...</span><span class="p">,[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span> <span class="n">interval_deg</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">width_px</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">image</span>
                                              <span class="o">.</span><span class="n">center</span><span class="p">)</span>
 <span class="n">cropped</span>
 </pre></div>
@@ -20106,10 +20134,10 @@ class="
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span> <span class="k">as</span> <span class="n">pilImg</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="c1"># plt.imshow(cv2.cvtColor(image.img, cv2.COLOR_BGR2RBG))</span>
-<span class="c1"># b, g, r = pilImg.open(&#39;data/1.jpg&#39;).split()</span>
+<span class="c1"># b, g, r = pilImg.open(&#39;data/00001.jpg&#39;).split()</span>
 <span class="c1"># plt.imshow(pilImg.merge(&quot;RGB&quot;, (b, r, g)))</span>
 
-<span class="n">im</span> <span class="o">=</span> <span class="n">pilImg</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;data/1.jpg&#39;</span><span class="p">)</span>
+<span class="n">im</span> <span class="o">=</span> <span class="n">pilImg</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;data/00001.jpg&#39;</span><span class="p">)</span>
 <span class="n">r</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGBA&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
 <span class="n">arr</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">a</span><span class="p">]</span>
 <span class="n">im</span> <span class="o">=</span> <span class="n">pilImg</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
@@ -20146,7 +20174,7 @@ class="
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;data/1.jpg&#39;</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">im</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;data/00001.jpg&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">Canny</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
 </pre></div>
 

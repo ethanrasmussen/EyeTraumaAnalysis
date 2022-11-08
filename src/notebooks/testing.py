@@ -21,10 +21,10 @@ import EyeTraumaAnalysis
 importlib.reload(EyeTraumaAnalysis)
 
 
-# In[83]:
+# In[1]:
 
 
-image = EyeTraumaAnalysis.Image('data/1.jpg')
+image = EyeTraumaAnalysis.Image('data/00001.jpg')
 
 
 # In[84]:
@@ -43,7 +43,7 @@ plt.imshow(EyeTraumaAnalysis.rotate_img(image.img, 77))
 # In[86]:
 
 
-plt.imshow(EyeTraumaAnalysis.rotated_segment(img=image.img, deg=218, widthPixels=20, center=image.center))
+plt.imshow(EyeTraumaAnalysis.rotated_segment(img=image.img, deg=218, width_px=20, center=image.center))
 
 
 # In[87]:
@@ -64,7 +64,7 @@ for piece in pieces:
 # In[89]:
 
 
-cropped = EyeTraumaAnalysis.cropped_segments(img=image.img[...,[2,1,0]], interval_deg=10, width_p=20, center=image
+cropped = EyeTraumaAnalysis.cropped_segments(img=image.img[...,[2,1,0]], interval_deg=10, width_px=20, center=image
                                              .center)
 cropped
 
@@ -113,10 +113,10 @@ import cv2
 from PIL import Image as pilImg
 import numpy as np
 # plt.imshow(cv2.cvtColor(image.img, cv2.COLOR_BGR2RBG))
-# b, g, r = pilImg.open('data/1.jpg').split()
+# b, g, r = pilImg.open('data/00001.jpg').split()
 # plt.imshow(pilImg.merge("RGB", (b, r, g)))
 
-im = pilImg.open('data/1.jpg')
+im = pilImg.open('data/00001.jpg')
 r,g,b,a = np.array(im.convert("RGBA")).T
 arr = [b,r,g,a]
 im = pilImg.fromarray(np.array(arr).transpose())
@@ -133,7 +133,7 @@ plt.imshow(255-image.img[...,::-1])
 # In[ ]:
 
 
-im = cv2.imread('data/1.jpg')
+im = cv2.imread('data/00001.jpg')
 plt.imshow(cv2.Canny(im, 25, 100))
 
 

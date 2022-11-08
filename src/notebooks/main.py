@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[9]:
+# In[1]:
 
 
 import os
@@ -15,13 +15,13 @@ if directory_path not in sys.path:
 import EyeTraumaAnalysis
 
 
-# In[11]:
+# In[4]:
 
 
 importlib.reload(EyeTraumaAnalysis)
 
 
-# In[4]:
+# In[2]:
 
 
 import numpy as np
@@ -29,10 +29,10 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-# In[5]:
+# In[11]:
 
 
-image = EyeTraumaAnalysis.Image("data/ischemic/1_li.jpg")
+image = EyeTraumaAnalysis.Image("data/ischemic/00001_li.jpg")
 plt.imshow(image.img)
 
 

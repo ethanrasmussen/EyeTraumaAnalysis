@@ -10,6 +10,7 @@ import imutils
 # import pupil center data for images
 li_df = pd.read_excel("data/ischemic/data_li.xlsx")
 h_df = pd.read_excel("data/healthy/data_h.xlsx")
+photos_df = pd.read_excel("data/photo_files_data.xlsx")
 
 
 #############################################################################
