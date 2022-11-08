@@ -3,11 +3,15 @@ import cv2
 import numpy as np
 import imutils
 from matplotlib import pyplot as plt
+import os
+import sys
 
+directory_path = os.path.abspath(os.path.join("../.."))
+if directory_path not in sys.path:
+    sys.path.append(directory_path)
 # import pupil center data for images
 li_df = pd.read_excel('data/ischemic/data_li.xlsx')
 h_df = pd.read_excel('data/healthy/data_h.xlsx')
-
 ####################################################
 ### CLASS DEFINITIONS:
 
