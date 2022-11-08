@@ -6,19 +6,22 @@ from matplotlib import pyplot as plt
 import os
 import sys
 
-directory_path = os.path.abspath(os.path.join("../.."))
-if directory_path not in sys.path:
-    sys.path.append(directory_path)
+
+
 # import pupil center data for images
-li_df = pd.read_excel('data/ischemic/data_li.xlsx')
-h_df = pd.read_excel('data/healthy/data_h.xlsx')
-####################################################
-### CLASS DEFINITIONS:
+li_df = pd.read_excel("data/ischemic/data_li.xlsx")
+h_df = pd.read_excel("data/healthy/data_h.xlsx")
+
+
+#############################################################################
+################# CLASS DEFINITIONS:
+#############################################################################
 
 # special class for holding cv2 images & their pupil center points in one object
 class Image:
     img = None
     center = None
+
     def __init__(self, filename:str):
         index = int(filename.split('.jpg')[0].split('/')[-1].replace('_h', '').replace('_li',''))
         self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[...,[2,1,0]]
@@ -29,12 +32,15 @@ class Image:
         else:
             self.center = None
 
-####################################################
-### HELPER FUNCTIONS:
+#############################################################################
+################# HELPER FUNCTIONS:
+#############################################################################
+
 
 # returns image rotated by deg degrees
 def rotate_img(img_CV2, deg:int):
     return imutils.rotate(img_CV2, deg)
+
 
 # rotates image, then returns segment masked from given center (with defined width/Y value)
 def rotated_segment(img, deg:int, widthPixels:int, center:tuple):
@@ -42,6 +48,7 @@ def rotated_segment(img, deg:int, widthPixels:int, center:tuple):
     mask = np.zeros(imgr.shape, dtype='uint8')
     cv2.rectangle(mask, (center[0], int(center[1] - (widthPixels / 2))), (center[0] + 25000000, int(center[1] + (widthPixels / 2))), (255,255,255), -1)
     return np.where(mask, imgr, np.zeros(imgr.shape, dtype='uint8'))
+
 
 # given turning/degree interval, returns multiple rotated uncropped segments encompassing entire image
 def segment_by_deg(img, degInterval:int, widthPixels:int, center:tuple):
@@ -54,6 +61,8 @@ def segment_by_deg(img, degInterval:int, widthPixels:int, center:tuple):
 
 # TODO: fix math/function so it works properly
 # given cv2 image file and pupil center, crops image to make given center actual geometric center of image
+
+
 def recenter_img(img, center):
     x1,y1,x2,y2 = 0,0,0,0
     ## img_cv2 = img.img
@@ -75,8 +84,10 @@ def recenter_img(img, center):
     ## return img_cv2[x1:y1, x2:y2]
     return img[x1:y1, x2:y2]
 
-####################################################
-### RADIAL SEGMENTATION FUNCTIONS:
+#############################################################################
+################# RADIAL SEGMENTATION FUNCTIONS:
+#############################################################################
+
 
 # captures entire image in cropped segments
 def get_segments(img, degInterval:int, widthPixels:int, center:tuple):
@@ -86,14 +97,19 @@ def get_segments(img, degInterval:int, widthPixels:int, center:tuple):
         new_pieces.append(segment[int(center[1] - (widthPixels / 2)):int(center[1] + (widthPixels / 2)), int(center[0]):int(center[0] + 999999999)])
     return new_pieces
 
-####################################################
-### EDGE DETECTION CODE:
+
+#############################################################################
+################# EDGE DETECTION CODE:
+#############################################################################
+
 
 # TODO: tweak Canny edge detection or find alternative edge detection method that functions well
 # goal: detect limbus within individual segments
 
+
 def canny_edges(image_img):
     return cv2.Canny(image_img, 100, 200)
+
 
 def show_canny(img_img):
     im = canny_edges(img_img)
@@ -104,8 +120,9 @@ def show_canny(img_img):
     plt.show()
 
 
-####################################################
-### DEPRECATED CODE:
+#############################################################################
+################# DEPRECATED CODE:
+#############################################################################
 
 # def get_segments(img, degInterval:int, widthPixels:int):
 #     center = (int(img.shape[1]/2), int(img.shape[0]/2))
