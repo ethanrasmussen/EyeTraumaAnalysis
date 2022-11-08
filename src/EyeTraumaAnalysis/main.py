@@ -7,7 +7,6 @@ import os
 import sys
 
 
-
 # import pupil center data for images
 li_df = pd.read_excel("data/ischemic/data_li.xlsx")
 h_df = pd.read_excel("data/healthy/data_h.xlsx")
@@ -22,15 +21,16 @@ class Image:
     img = None
     center = None
 
-    def __init__(self, filename:str):
-        index = int(filename.split('.jpg')[0].split('/')[-1].replace('_h', '').replace('_li',''))
-        self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[...,[2,1,0]]
-        if ('_li' in filename):
-            self.center = (li_df['centerX'][index], li_df['centerY'][index])
-        elif ('_h' in filename):
-            self.center = (h_df['centerX'][index], h_df['centerY'][index])
+    def __init__(self, filename: str):
+        index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li",""))
+        self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[..., [2,1,0]]
+        if "_li" in filename:
+            self.center = (li_df["centerX"][index], li_df["centerY"][index])
+        elif "_h" in filename:
+            self.center = (h_df["centerX"][index], h_df["centerY"][index])
         else:
             self.center = None
+
 
 #############################################################################
 ################# HELPER FUNCTIONS:
@@ -38,25 +38,25 @@ class Image:
 
 
 # returns image rotated by deg degrees
-def rotate_img(img_CV2, deg:int):
-    return imutils.rotate(img_CV2, deg)
+def rotate_img(img_cv2, deg: int):
+    return imutils.rotate(img_cv2, deg)
 
 
 # rotates image, then returns segment masked from given center (with defined width/Y value)
-def rotated_segment(img, deg:int, widthPixels:int, center:tuple):
+def rotated_segment(img, deg: int, width_px: int, center: tuple):
     imgr = rotate_img(img, deg)
-    mask = np.zeros(imgr.shape, dtype='uint8')
-    cv2.rectangle(mask, (center[0], int(center[1] - (widthPixels / 2))), (center[0] + 25000000, int(center[1] + (widthPixels / 2))), (255,255,255), -1)
-    return np.where(mask, imgr, np.zeros(imgr.shape, dtype='uint8'))
+    mask = np.zeros(imgr.shape, dtype="uint8")
+    cv2.rectangle(mask, (center[0], int(center[1] - (width_px / 2))), (center[0] + 25000000, int(center[1] + (width_px / 2))), (255,255,255), -1)
+    return np.where(mask, imgr, np.zeros(imgr.shape, dtype="uint8"))
 
 
 # given turning/degree interval, returns multiple rotated uncropped segments encompassing entire image
-def segment_by_deg(img, degInterval:int, widthPixels:int, center:tuple):
+def segment_by_deg(img, interval_deg: int, width_px: int, center: tuple):
     deg = 0
     segments = []
-    for i in range(int(360 / degInterval)):
-        segments.append(rotated_segment(img, deg, widthPixels, center))
-        deg += degInterval
+    for i in range(int(360 / interval_deg)):
+        segments.append(rotated_segment(img, deg, width_px, center))
+        deg += interval_deg
     return segments
 
 # TODO: fix math/function so it works properly
@@ -90,11 +90,11 @@ def recenter_img(img, center):
 
 
 # captures entire image in cropped segments
-def get_segments(img, degInterval:int, widthPixels:int, center:tuple):
-    segments = segment_by_deg(img, degInterval, widthPixels, center)
+def get_segments(img, interval_deg: int, width_px: int, center: tuple):
+    segments = segment_by_deg(img, interval_deg, width_px, center)
     new_pieces = []
     for segment in segments:
-        new_pieces.append(segment[int(center[1] - (widthPixels / 2)):int(center[1] + (widthPixels / 2)), int(center[0]):int(center[0] + 999999999)])
+        new_pieces.append(segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)), int(center[0]):int(center[0] + 999999999)])
     return new_pieces
 
 
@@ -113,10 +113,10 @@ def canny_edges(image_img):
 
 def show_canny(img_img):
     im = canny_edges(img_img)
-    plt.subplot(121), plt.imshow(img_img, cmap='gray')
-    plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-    plt.subplot(122), plt.imshow(im, cmap='gray')
-    plt.title('Edge Image'), plt.xticks([]), plt.yticks([])
+    plt.subplot(121), plt.imshow(img_img, cmap="gray")
+    plt.title("Original Image"), plt.xticks([]), plt.yticks([])
+    plt.subplot(122), plt.imshow(im, cmap="gray")
+    plt.title("Edge Image"), plt.xticks([]), plt.yticks([])
     plt.show()
 
 
@@ -124,16 +124,16 @@ def show_canny(img_img):
 ################# DEPRECATED CODE:
 #############################################################################
 
-# def get_segments(img, degInterval:int, widthPixels:int):
+# def get_segments(img, interval_deg:int, width_px:int):
 #     center = (int(img.shape[1]/2), int(img.shape[0]/2))
-#     segments = segment_by_deg(img, degInterval, widthPixels, center)
+#     segments = segment_by_deg(img, interval_deg, width_px, center)
 #     new_pieces = []
 #     for segment in segments:
-#         new_pieces.append(segment[int(center[1] - (widthPixels / 2)):int(center[1] + (widthPixels / 2)),
+#         new_pieces.append(segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)),
 #                           int(center[0]):int(center[0] + 999999999)])
 #     return new_pieces
 
-# def vertical_display(segments, cropped:bool, center=None, widthPixels=None):
+# def vertical_display(segments, cropped:bool, center=None, width_px=None):
 #     if cropped:
 #         for s in segments:
 #             plt.figure()
@@ -141,9 +141,9 @@ def show_canny(img_img):
 #     else:
 #         for segment in segments:
 #             plt.figure()
-#             plt.imshow(segment[int(center[1] - (widthPixels / 2)):int(center[1] + (widthPixels / 2)), int(center[0]):int(center[0] + 999999999)])
+#             plt.imshow(segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)), int(center[0]):int(center[0] + 999999999)])
 #
-# def horizontal_display(segments, cropped:bool, center=None, widthPixels=None):
+# def horizontal_display(segments, cropped:bool, center=None, width_px=None):
 #     # adjust/rotate images
 #     imgs = []
 #     if cropped:
@@ -152,7 +152,7 @@ def show_canny(img_img):
 #     else:
 #         imgs = []
 #         for segment in segments:
-#             new = segment[int(center[1] - (widthPixels / 2)):int(center[1] + (widthPixels / 2)), int(center[0]):int(center[0] + 999999999)]
+#             new = segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)), int(center[0]):int(center[0] + 999999999)]
 #             imgs.append(rotate_img(new, 90))
 #     # build figure and display
 #     plt.figure(figsize=(1, 2 * len(imgs)))
