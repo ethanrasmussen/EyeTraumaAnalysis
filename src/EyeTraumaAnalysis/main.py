@@ -43,22 +43,22 @@ def rotate_img(img_cv2, deg: int):
 
 
 # rotates image, then returns segment masked from given center (with defined width/Y value)
-def rotated_segment(img, deg: int, width_px: int, center: tuple):
+def rotated_segment(img, deg: int, wd_px: int, center: tuple):
     imgr = rotate_img(img, deg)
     mask = np.zeros(imgr.shape, dtype="uint8")
     cv2.rectangle(mask,
-                  (center[0], int(center[1] - (width_px / 2))),
-                  (center[0] + 25000000, int(center[1] + (width_px / 2))),
+                  (center[0], int(center[1] - (wd_px / 2))),
+                  (center[0] + 25000000, int(center[1] + (wd_px / 2))),
                   (255,255,255), -1)
     return np.where(mask, imgr, np.zeros(imgr.shape, dtype="uint8"))
 
 
 # given turning/degree interval, returns multiple rotated uncropped segments encompassing entire image
-def segment_by_deg(img, interval_deg: int, width_px: int, center: tuple):
+def segment_by_deg(img, interval_deg: int, wd_px: int, center: tuple):
     deg = 0
     segments = []
     for i in range(int(360 / interval_deg)):
-        segments.append(rotated_segment(img, deg, width_px, center))
+        segments.append(rotated_segment(img, deg, wd_px, center))
         deg += interval_deg
     return segments
 
@@ -93,12 +93,12 @@ def recenter_img(img, center):
 
 
 # captures entire image in cropped segments
-def get_segments(img, interval_deg: int, width_px: int, center: tuple):
-    segments = segment_by_deg(img, interval_deg, width_px, center)
+def get_segments(img, interval_deg: int, wd_px: int, center: tuple):
+    segments = segment_by_deg(img, interval_deg, wd_px, center)
     new_pieces = []
     for segment in segments:
         new_pieces.append(
-            segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)),
+            segment[int(center[1] - (wd_px / 2)):int(center[1] + (wd_px / 2)),
             int(center[0]):int(center[0] + 999999999)])
     return new_pieces
 
@@ -129,16 +129,16 @@ def show_canny(img_img):
 ################# DEPRECATED CODE:
 #############################################################################
 
-# def get_segments(img, interval_deg:int, width_px:int):
+# def get_segments(img, interval_deg:int, wd_px:int):
 #     center = (int(img.shape[1]/2), int(img.shape[0]/2))
-#     segments = segment_by_deg(img, interval_deg, width_px, center)
+#     segments = segment_by_deg(img, interval_deg, wd_px, center)
 #     new_pieces = []
 #     for segment in segments:
-#         new_pieces.append(segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)),
+#         new_pieces.append(segment[int(center[1] - (wd_px / 2)):int(center[1] + (wd_px / 2)),
 #                           int(center[0]):int(center[0] + 999999999)])
 #     return new_pieces
 
-# def vertical_display(segments, cropped:bool, center=None, width_px=None):
+# def vertical_display(segments, cropped:bool, center=None, wd_px=None):
 #     if cropped:
 #         for s in segments:
 #             plt.figure()
@@ -146,9 +146,9 @@ def show_canny(img_img):
 #     else:
 #         for segment in segments:
 #             plt.figure()
-#             plt.imshow(segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)), int(center[0]):int(center[0] + 999999999)])
+#             plt.imshow(segment[int(center[1] - (wd_px / 2)):int(center[1] + (wd_px / 2)), int(center[0]):int(center[0] + 999999999)])
 #
-# def horizontal_display(segments, cropped:bool, center=None, width_px=None):
+# def horizontal_display(segments, cropped:bool, center=None, wd_px=None):
 #     # adjust/rotate images
 #     imgs = []
 #     if cropped:
@@ -157,7 +157,7 @@ def show_canny(img_img):
 #     else:
 #         imgs = []
 #         for segment in segments:
-#             new = segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)), int(center[0]):int(center[0] + 999999999)]
+#             new = segment[int(center[1] - (wd_px / 2)):int(center[1] + (wd_px / 2)), int(center[0]):int(center[0] + 999999999)]
 #             imgs.append(rotate_img(new, 90))
 #     # build figure and display
 #     plt.figure(figsize=(1, 2 * len(imgs)))
