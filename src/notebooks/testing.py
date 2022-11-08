@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import os
 import sys
 import importlib
+from matplotlib import pyplot as plt
+
 os.chdir("../..")
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
@@ -15,45 +17,39 @@ if directory_path not in sys.path:
 import EyeTraumaAnalysis
 
 
-# In[ ]:
+# In[2]:
 
 
 importlib.reload(EyeTraumaAnalysis)
 
 
-# In[1]:
+# In[5]:
 
 
-image = EyeTraumaAnalysis.Image('data/00001.jpg')
-
-
-# In[84]:
-
-
-from matplotlib import pyplot as plt
+image = EyeTraumaAnalysis.Image("data/ischemic/00001_li.jpg")
 plt.imshow(image.img)
 
 
-# In[85]:
+# In[6]:
 
 
 plt.imshow(EyeTraumaAnalysis.rotate_img(image.img, 77))
 
 
-# In[86]:
+# In[8]:
 
 
-plt.imshow(EyeTraumaAnalysis.rotated_segment(img=image.img, deg=218, width_px=20, center=image.center))
+plt.imshow(EyeTraumaAnalysis.rotated_segment(img=image.img, deg=218, wd_px=20, center=image.center))
 
 
-# In[87]:
+# In[11]:
 
 
-pieces = EyeTraumaAnalysis.segment_by_deg(img=image.img, interval_deg=10, width_px=20, center=image.center)
-pieces
+pieces = EyeTraumaAnalysis.segment_by_deg(img=image.img, interval_deg=10, wd_px=20, center=image.center)
+type(pieces)
 
 
-# In[88]:
+# In[12]:
 
 
 for piece in pieces:
@@ -61,12 +57,12 @@ for piece in pieces:
     plt.imshow(piece)
 
 
-# In[89]:
+# In[13]:
 
 
 cropped = EyeTraumaAnalysis.cropped_segments(img=image.img[...,[2,1,0]], interval_deg=10, width_px=20, center=image
                                              .center)
-cropped
+type(cropped)
 
 
 # In[90]:
