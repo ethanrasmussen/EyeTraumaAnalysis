@@ -15,10 +15,10 @@ if directory_path not in sys.path:
 import EyeTraumaAnalysis
 
 
-# In[4]:
+# In[2]:
 
 
-importlib.reload(EyeTraumaAnalysis)
+importlib.reload(EyeTraumaAnalysis);
 
 
 # In[2]:
@@ -29,37 +29,31 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-# In[16]:
+# In[3]:
 
 
-image = EyeTraumaAnalysis.Image("data/ischemic/00001_li.jpg")
-plt.imshow(image.img)
+image = EyeTraumaAnalysis.Image("data/01_raw/00001_li.jpg")
+plt.imshow(image.img);
 
 
-# In[14]:
+# In[4]:
 
 
 segments = EyeTraumaAnalysis.get_segments(
     img=image.img,
     interval_deg=10,
     wd_px=20,
-    center=image.center)
+    center=image.center )
 
 
-# In[7]:
+# In[6]:
 
 
-plt.imshow(segments[0])
+fig, axs = plt.subplots(len(segments), 1, sharex=True, sharey=True)
+for ind, (deg, segment) in enumerate(segments.items()):
+    axs[ind].imshow(segment)
 
-
-# In[8]:
-
-
-plt.imshow(np.vstack(segments))
-
-
-# In[ ]:
-
-
-
+fig, axs = plt.subplots(1,2)
+axs[0].imshow(image.img);
+axs[1].imshow(np.vstack([segment for ind,segment in segments.items()]));
 

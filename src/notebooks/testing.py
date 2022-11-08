@@ -26,20 +26,21 @@ importlib.reload(EyeTraumaAnalysis)
 # In[5]:
 
 
-image = EyeTraumaAnalysis.Image("data/ischemic/00001_li.jpg")
-plt.imshow(image.img)
+image = EyeTraumaAnalysis.Image("data/01_raw/00001_li.jpg")
+plt.imshow(image.img);
 
 
 # In[6]:
 
 
-plt.imshow(EyeTraumaAnalysis.rotate_img(image.img, 77))
+plt.imshow(EyeTraumaAnalysis.rotate_img(image.img, 77));
 
 
-# In[8]:
+# In[14]:
 
 
-plt.imshow(EyeTraumaAnalysis.rotated_segment(img=image.img, deg=218, wd_px=20, center=image.center))
+rotated_segments = EyeTraumaAnalysis.rotated_segment(img=image.img, deg=218, wd_px=20, center=image.center)
+plt.imshow(rotated_segments);
 
 
 # In[11]:
@@ -60,27 +61,26 @@ for piece in pieces:
 # In[13]:
 
 
-cropped = EyeTraumaAnalysis.cropped_segments(img=image.img[...,[2,1,0]], interval_deg=10, width_px=20, center=image
-                                             .center)
+cropped = EyeTraumaAnalysis.cropped_segments(img=image.img[...,[2,1,0]], interval_deg=10, width_px=20, center=image.center)
 type(cropped)
 
 
 # In[90]:
 
 
-plt.imshow(cropped[0])
+plt.imshow(cropped[0]);
 
 
 # In[91]:
 
 
-plt.imshow(cropped[1])
+plt.imshow(cropped[1]);
 
 
 # In[92]:
 
 
-EyeTraumaAnalysis.vertical_display(cropped, True)
+EyeTraumaAnalysis.vertical_display(cropped, True);
 
 
 # In[93]:
@@ -92,7 +92,7 @@ EyeTraumaAnalysis.horizontal_display(cropped, True)
 # In[94]:
 
 
-plt.imshow(EyeTraumaAnalysis.recenter_img(image.img, image.center))
+plt.imshow(EyeTraumaAnalysis.recenter_img(image.img, image.center));
 
 
 # In[ ]:
@@ -112,7 +112,7 @@ import numpy as np
 # b, g, r = pilImg.open('data/00001.jpg').split()
 # plt.imshow(pilImg.merge("RGB", (b, r, g)))
 
-im = pilImg.open('data/00001.jpg')
+im = pilImg.open("data/01_raw00001_li.jpg")
 r,g,b,a = np.array(im.convert("RGBA")).T
 arr = [b,r,g,a]
 im = pilImg.fromarray(np.array(arr).transpose())
@@ -160,12 +160,6 @@ plt.imshow(averaged)
 
 plt.imshow(np.vstack(cropped))
 # plt.imshow(np.mean((np.vstack(cropped)), axis=0))
-
-
-# In[ ]:
-
-
-cropped[0].shape
 
 
 # In[ ]:
