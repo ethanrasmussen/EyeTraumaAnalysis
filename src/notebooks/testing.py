@@ -49,7 +49,7 @@ plt.imshow(EyeTraumaAnalysis.rotated_segment(img=image.img, deg=218, widthPixels
 # In[87]:
 
 
-pieces = EyeTraumaAnalysis.segment_by_deg(img=image.img, degInterval=10, widthPixels=20, center=image.center)
+pieces = EyeTraumaAnalysis.segment_by_deg(img=image.img, interval_deg=10, width_px=20, center=image.center)
 pieces
 
 
@@ -64,7 +64,8 @@ for piece in pieces:
 # In[89]:
 
 
-cropped = EyeTraumaAnalysis.cropped_segments(img=image.img[...,[2,1,0]], degInterval=10, widthPixels=20, center=image.center)
+cropped = EyeTraumaAnalysis.cropped_segments(img=image.img[...,[2,1,0]], interval_deg=10, width_p=20, center=image
+                                             .center)
 cropped
 
 

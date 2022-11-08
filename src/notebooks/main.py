@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[9]:
 
 
 import os
@@ -15,7 +15,7 @@ if directory_path not in sys.path:
 import EyeTraumaAnalysis
 
 
-# In[3]:
+# In[11]:
 
 
 importlib.reload(EyeTraumaAnalysis)
@@ -32,7 +32,7 @@ from matplotlib import pyplot as plt
 # In[5]:
 
 
-image = EyeTraumaAnalysis.Image('data/ischemic/1_li.jpg')
+image = EyeTraumaAnalysis.Image("data/ischemic/1_li.jpg")
 plt.imshow(image.img)
 
 
@@ -41,8 +41,8 @@ plt.imshow(image.img)
 
 segments = EyeTraumaAnalysis.get_segments(
     img=image.img,
-    degInterval=10,
-    widthPixels=20,
+    interval_deg=10,
+    wd_px=20,
     center=image.center)
 
 
