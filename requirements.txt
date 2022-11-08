@@ -2,6 +2,7 @@ versioneer~=0.19
 setuptools~=56.2.0   #setup tools 52.0.0 was giving bugs. 57.4.0 is latest supported by colab as of Nov 7, 2022
 ryerrabelli~=1.0.62
 jupyter~=1.0.0
+Jinja2==3.0.3
 
 # The below versions are based off what the latest version google colab supports as of Nov 7, 2022
 scipy==1.7.3
