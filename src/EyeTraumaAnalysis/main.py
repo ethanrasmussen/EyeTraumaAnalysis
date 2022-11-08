@@ -1,10 +1,10 @@
-import pandas as pd
-import cv2
-import numpy as np
-import imutils
-from matplotlib import pyplot as plt
 import os
 import sys
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+import cv2
+import imutils
 
 
 # import pupil center data for images
@@ -22,8 +22,8 @@ class Image:
     center = None
 
     def __init__(self, filename: str):
-        index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li",""))
-        self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[..., [2,1,0]]
+        index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
+        self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[..., [2,1,0] ]
         if "_li" in filename:
             self.center = (li_df["centerX"][index], li_df["centerY"][index])
         elif "_h" in filename:
@@ -46,7 +46,10 @@ def rotate_img(img_cv2, deg: int):
 def rotated_segment(img, deg: int, width_px: int, center: tuple):
     imgr = rotate_img(img, deg)
     mask = np.zeros(imgr.shape, dtype="uint8")
-    cv2.rectangle(mask, (center[0], int(center[1] - (width_px / 2))), (center[0] + 25000000, int(center[1] + (width_px / 2))), (255,255,255), -1)
+    cv2.rectangle(mask,
+                  (center[0], int(center[1] - (width_px / 2))),
+                  (center[0] + 25000000, int(center[1] + (width_px / 2))),
+                  (255,255,255), -1)
     return np.where(mask, imgr, np.zeros(imgr.shape, dtype="uint8"))
 
 
@@ -94,7 +97,9 @@ def get_segments(img, interval_deg: int, width_px: int, center: tuple):
     segments = segment_by_deg(img, interval_deg, width_px, center)
     new_pieces = []
     for segment in segments:
-        new_pieces.append(segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)), int(center[0]):int(center[0] + 999999999)])
+        new_pieces.append(
+            segment[int(center[1] - (width_px / 2)):int(center[1] + (width_px / 2)),
+            int(center[0]):int(center[0] + 999999999)])
     return new_pieces
 
 
