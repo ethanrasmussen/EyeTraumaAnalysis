@@ -3,10 +3,15 @@ import cv2
 import numpy as np
 import imutils
 from matplotlib import pyplot as plt
+from PIL import Image
+from pathlib import Path
 
+# print(str(Path.cwd().parents[1]) + '\data\ischemic\data_li.xlsx')
 # import pupil center data for images
-li_df = pd.read_excel('data/ischemic/data_li.xlsx')
-h_df = pd.read_excel('data/healthy/data_h.xlsx')
+li_df = pd.read_excel(str(Path.cwd().parents[1]) + '\data\ischemic\data_li.xlsx')
+h_df = pd.read_excel(str(Path.cwd().parents[1]) + '\data\healthy\data_h.xlsx')
+# li_df = pd.read_excel('data/ischemic/data_li.xlsx')
+# h_df = pd.read_excel('data/healthy/data_h.xlsx')
 
 ####################################################
 ### CLASS DEFINITIONS:
@@ -16,7 +21,7 @@ class Image:
     img = None
     center = None
     def __init__(self, filename:str):
-        index = int(filename.split('.jpg')[0].split('/')[-1].replace('_h', '').replace('_li',''))
+        index = int(filename.replace("\\", "/").split('.jpg')[0].split('/')[-1].replace('_h', '').replace('_li',''))
         self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[...,[2,1,0]]
         if ('_li' in filename):
             self.center = (li_df['centerX'][index], li_df['centerY'][index])
@@ -48,28 +53,46 @@ def segment_by_deg(img, degInterval:int, widthPixels:int, center:tuple):
         deg += degInterval
     return segments
 
+# converts OpenCV image to PIL image
+def opencv_to_pil(opencv_image):
+    return Image.fromarray(cv2.cvtColor(opencv_image, cv2.COLOR_BGR2RGB))
+
+# converts PIL image to OpenCV image
+def pil_to_opencv(pil_image):
+    new_img = np.array(pil_image)
+    return cv2.cvtColor(new_img, cv2.COLOR_RGB2BGR)
+
 # TODO: fix math/function so it works properly
 # given cv2 image file and pupil center, crops image to make given center actual geometric center of image
 def recenter_img(img, center):
-    x1,y1,x2,y2 = 0,0,0,0
-    ## img_cv2 = img.img
-    ## center = img.center
-    ## height, width = img_cv2.shape[0], img_cv2.shape[1]
-    height, width = img.shape[0], img.shape[1]
-    wseg1, wseg2 = center[0], (width - center[0])
-    hseg1, hseg2 = center[1], (height - center[1])
-    wdiff = max([wseg1, wseg2]) - min([wseg1, wseg2])
-    if wseg1 > wseg2:
-        x1 = x1 + wdiff
-    if wseg2 > wseg1:
-        x2 = x2 - wdiff
-    hdiff = max([hseg1, hseg2]) - min([hseg1, hseg2])
-    if hseg2 > hseg1:
-        y2 = y2 - hdiff
-    if hseg1 > hseg2:
-        y1 = y1 + hdiff
-    ## return img_cv2[x1:y1, x2:y2]
-    return img[x1:y1, x2:y2]
+    h, w = img.shape[0], img.shape[1]
+    x, y = center[0], center[1]
+    xDistFromCenter = min((w - x), x)
+    yDistFromCenter = min((h - y), y)
+    pil_image = opencv_to_pil(img)
+    cropped_img = pil_image.crop((
+        x - xDistFromCenter,
+        y + yDistFromCenter,
+        x + xDistFromCenter,
+        y - yDistFromCenter
+    ))
+    return pil_to_opencv(cropped_img)
+
+    # x1,y1,x2,y2 = 0,0,0,0
+    # height, width = img.shape[0], img.shape[1]
+    # wseg1, wseg2 = center[0], (width - center[0])
+    # hseg1, hseg2 = center[1], (height - center[1])
+    # wdiff = max([wseg1, wseg2]) - min([wseg1, wseg2])
+    # if wseg1 > wseg2:
+    #     x1 = x1 + wdiff
+    # if wseg2 > wseg1:
+    #     x2 = x2 - wdiff
+    # hdiff = max([hseg1, hseg2]) - min([hseg1, hseg2])
+    # if hseg2 > hseg1:
+    #     y2 = y2 - hdiff
+    # if hseg1 > hseg2:
+    #     y1 = y1 + hdiff
+    # return img[x1:y1, x2:y2]
 
 ####################################################
 ### RADIAL SEGMENTATION FUNCTIONS:
