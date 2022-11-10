@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import os
@@ -21,7 +21,7 @@ import EyeTraumaAnalysis
 importlib.reload(EyeTraumaAnalysis);
 
 
-# In[2]:
+# In[4]:
 
 
 import numpy as np
@@ -56,4 +56,26 @@ for ind, (deg, segment) in enumerate(segments.items()):
 fig, axs = plt.subplots(1,2)
 axs[0].imshow(image.img);
 axs[1].imshow(np.vstack([segment for ind,segment in segments.items()]));
+
+
+# In[7]:
+
+
+image = EyeTraumaAnalysis.Image("data/01_raw/10001.jpg")
+
+segments = EyeTraumaAnalysis.get_segments(
+    img=image.img,
+    interval_deg=10,
+    wd_px=4,
+    center=image.center )
+
+fig, axs = plt.subplots(1,2)
+axs[0].imshow(image.img);
+axs[1].imshow(np.vstack([segment for ind,segment in segments.items()]));
+
+
+# In[ ]:
+
+
+
 
