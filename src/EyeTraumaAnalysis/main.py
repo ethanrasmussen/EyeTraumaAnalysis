@@ -62,7 +62,8 @@ def rotate_img(img, angle:float, center:tuple = None, scale=1.0, borderValue=Non
         borderValue = np.zeros(img.shape[2:])
     # perform the rotation
     matrix = cv2.getRotationMatrix2D(center, angle, scale)
-    rotated = cv2.warpAffine(img, matrix, (w, h), borderValue=borderValue)
+    # interpolation method didn't seem to matter for quality when testing INTER_NEAREST vs INTER_CUBIC
+    rotated = cv2.warpAffine(img, matrix, (w, h), borderValue=borderValue, flags=cv2.INTER_CUBIC)
 
     # return the rotated image
     return rotated

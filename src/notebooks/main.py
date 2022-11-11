@@ -15,7 +15,7 @@ if directory_path not in sys.path:
 import EyeTraumaAnalysis
 
 
-# In[7]:
+# In[5]:
 
 
 importlib.reload(EyeTraumaAnalysis);
@@ -59,7 +59,7 @@ axs[0].imshow(image.img);
 axs[1].imshow(np.vstack([segment for ind,segment in segments.items()]));
 
 
-# In[9]:
+# In[3]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/11004.jpg")
@@ -69,23 +69,6 @@ segments = EyeTraumaAnalysis.get_segments(
     interval_deg=interval_deg,
     wd_px=20,
     center=image.center, borderValue=(0,0,0,0) )
-
-
-# In[10]:
-
-
-fig, axs = plt.subplots(len(segments), 1, sharex=True, sharey=True, figsize=(2,12), dpi=72)
-for ind, (deg, segment) in enumerate(segments.items()):
-    axs[ind].imshow(segment)
-    axs[ind].set_yticks([])
-    axs[ind].set_xticks([0, int(segment.shape[1]/2), int(segment.shape[1])])
-    axs[ind].set_xticklabels(["Center", "", "Edge"])
-    if ind % 2 == 0:
-        axs[ind].set_ylabel(f"{ind*interval_deg}°")
-    else:
-        axs[ind].set_ylabel(f"{ind*interval_deg}°")
-        axs[ind].yaxis.set_label_position("right")
-        axs[ind].yaxis.tick_right()
 
 
 # In[18]:
@@ -104,8 +87,18 @@ for ind, (deg, segment) in enumerate(segments.items()):
     axs[ind].spines["bottom"].set_visible(False)
 
 
+# In[22]:
 
-# In[19]:
+
+concatenated = np.vstack([segment for ind,segment in segments.items()])
+fig, axs = plt.subplots(1,2)
+axs[0].imshow(image.img);
+axs[1].imshow(concatenated);
+axs[1].spines["left"].set_visible(False)
+axs[1].spines["right"].set_visible(False)
+
+
+# In[6]:
 
 
 concatenated = np.vstack([segment for ind,segment in segments.items()])
