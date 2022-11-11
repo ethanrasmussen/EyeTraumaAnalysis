@@ -15,7 +15,7 @@ if directory_path not in sys.path:
 import EyeTraumaAnalysis
 
 
-# In[5]:
+# In[6]:
 
 
 importlib.reload(EyeTraumaAnalysis);
@@ -29,7 +29,13 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-# In[3]:
+# In[10]:
+
+
+vars(EyeTraumaAnalysis)
+
+
+# In[7]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/00001_li.jpg")
