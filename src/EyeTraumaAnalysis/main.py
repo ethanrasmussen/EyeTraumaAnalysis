@@ -4,14 +4,14 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import cv2
-import imutils
 
 
 # Get pupil center data for images from excel
 # opencv function cv2.getRotationMatrix2D gives an error if center input is np.int64 instead of python raw int or float
 li_df = pd.read_excel("data/01_raw/data_li.xlsx", dtype={"centerX":float, "centerY":float})
 h_df = pd.read_excel("data/01_raw/data_h.xlsx", dtype={"centerX":float, "centerY":float})
-photos_df = pd.read_excel("data/01_raw/photo_files_data.xlsx", dtype={"centerX":float, "centerY":float})  # contains info on all the images
+# contains info on all the images
+photos_df = pd.read_excel("data/01_raw/photo_files_data.xlsx", dtype={"centerX":float, "centerY":float})
 
 
 #############################################################################
@@ -22,14 +22,22 @@ class Image:
     """special class for holding cv2 images & their pupil center points in one object """
     img = None
     center = None  # tuple of np.float64
+    original_channel_ct: tuple = None  # tuple that is usually length = 1
 
-    def __init__(self, filename: str=None, img=None, center: tuple=None):
+    def __init__(self, filename: str = None, img=None, center: tuple = None):
         if filename is None:
             self.img = img
             self.center = center
+            self.original_channel_ct = img.shape[2:]
         else:
             index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
-            self.img = cv2.imread(filename, cv2.IMREAD_COLOR)[..., [2,1,0]]
+            self.img = cv2.imread(filename, cv2.IMREAD_COLOR)
+            self.img = self.img[..., [2,1,0]]  # convert BGR to RGB color scheme
+            self.original_channel_ct = self.img.shape[2:]
+            if self.original_channel_ct == (3,):  # if 3 channel image
+                default_alpha = 255
+                self.img = np.dstack( (self.img, default_alpha*np.ones(self.img.shape[:2], dtype=self.img.dtype)) )
+
             if "_li" in filename:
                 self.center = (li_df["centerX"][index], li_df["centerY"][index])
             elif "_h" in filename:
@@ -42,39 +50,48 @@ class Image:
 #############################################################################
 
 
-def rotate_img(img_cv2, deg:float, center:tuple = None):
+def rotate_img(img, angle:float, center:tuple = None, scale=1.0, borderValue=None):
     """shortcut function to return image rotated by deg degrees"""
-    if center is None:  # if the center is None (default), initialize it as the center of the image
-        center = (int(img_cv2.shape[1] / 2), int(img_cv2.shape[0] / 2))
-    # imutils.rotate's default center is None (converted to middle of image), default scale is 1.0
-    # imutils uses opencv functions (warpAffine and getRotationMatrix2D) to rotate
-    return imutils.rotate(img_cv2, deg, center=center, scale=1.0)
+
+    # Below is inspired/copied from the code of imutils.rotate
+    (h, w) = img.shape[:2]
+    # if the center is None (default), initialize it as the center of the image
+    if center is None:
+        center = (int(img.shape[1] / 2), int(img.shape[0] / 2))
+    if borderValue is None:
+        borderValue = np.zeros(img.shape[2:])
+    # perform the rotation
+    matrix = cv2.getRotationMatrix2D(center, angle, scale)
+    rotated = cv2.warpAffine(img, matrix, (w, h), borderValue=borderValue)
+
+    # return the rotated image
+    return rotated
 
 
-def get_segment_uncropped(img, deg:float, wd_px:int, center:tuple = None, side_left:bool = False):
+def get_segment_uncropped(img, deg:float, wd_px:int, center:tuple = None, side_left:bool = False, borderValue=None):
     """rotates image, then returns segment masked from given center (with defined width/Y value)
     Function formerly named get_segment_uncropped
     """
     if center is None:  # if the center is None (default), initialize it as the center of the image
         center = (int(img.shape[1]/2), int(img.shape[0]/2))
-    img_rotated = rotate_img(img, deg, center=center)
+    img_rotated = rotate_img(img, deg, center=center, borderValue=borderValue)
     mask = np.zeros(img_rotated.shape, dtype="uint8")
     if side_left:
         cv2.rectangle(mask,
                       (int(center[0] - 25000000), int(center[1] - (wd_px / 2))),
                       (int(center[0]), int(center[1] + (wd_px / 2))),
-                      (255, 255, 255), -1)
+                      255*np.ones(img_rotated.shape[2:]), -1)
     else:  # segments on the right side
         cv2.rectangle(mask,
                       (int(center[0]), int(center[1] - (wd_px / 2))),
                       (int(center[0] + 25000000), int(center[1] + (wd_px / 2))),
-                      (255, 255, 255), -1)
+                      255*np.ones(img_rotated.shape[2:]), -1)
 
-    return np.where(mask, img_rotated, np.zeros(img_rotated.shape, dtype="uint8"))
+    return np.where(mask, img_rotated, np.zeros(img_rotated.shape, dtype=img_rotated.dtype))
 
 
-def get_segments_uncropped(img, interval_deg:int, wd_px:int, center:tuple = None, \
-                           side_left:bool = False, clockwise:bool = True):
+def get_segments_uncropped(img, interval_deg:int, wd_px:int, center:tuple = None,
+                           side_left:bool = False, clockwise:bool = True, borderValue=None):
     """given turning/degree interval, returns multiple rotated uncropped segments encompassing entire image
     Function formerly named
     :return:
@@ -85,7 +102,7 @@ def get_segments_uncropped(img, interval_deg:int, wd_px:int, center:tuple = None
     segments = {}
     deg = 0 if clockwise else 360  # deg will either go from 0->360 or 360->0
     for i in range(int(360 / interval_deg)):
-        segments[deg] = get_segment_uncropped(img, deg, wd_px, center=center, side_left=side_left)
+        segments[deg] = get_segment_uncropped(img, deg, wd_px, center=center, side_left=side_left, borderValue=borderValue)
         deg = deg + (interval_deg if clockwise else -interval_deg)
     return segments
 
@@ -121,14 +138,14 @@ def recenter_img(img, center:tuple = None):
 ################# RADIAL SEGMENTATION FUNCTIONS:
 #############################################################################
 
-def get_segments(img, interval_deg:int, wd_px:int, center:tuple = None, side_left:bool = False):
+def get_segments(img, interval_deg:int, wd_px:int, center:tuple = None, side_left:bool = False, borderValue=None):
     """captures entire image in cropped segments
     :return: list of images (image segments)
     :rtype: list
     """
     if center is None:  # if the center is None (default), initialize it as the center of the image
         center = (img.shape[1] // 2, img.shape[0] // 2)   # 2-length tuple of ints
-    segments = get_segments_uncropped(img, interval_deg, wd_px, center=center, side_left=side_left)
+    segments = get_segments_uncropped(img, interval_deg, wd_px, center=center, side_left=side_left, borderValue=borderValue)
     cropped_segments = {}
     for deg, segment in segments.items():
         if side_left:
