@@ -21,22 +21,17 @@ import EyeTraumaAnalysis
 importlib.reload(EyeTraumaAnalysis);
 
 
-# In[2]:
+# In[53]:
 
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+import cv2
 
 
-# In[5]:
-
-
-EyeTraumaAnalysis.Image
-
-
-# In[3]:
+# In[6]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/11000.jpg")
@@ -160,9 +155,10 @@ for ind, ax in enumerate(axs[3:,:].reshape(-1)):
     ax.legend()
 
 
-# In[138]:
+# In[14]:
 
 
+image = EyeTraumaAnalysis.Image("data/01_raw/11004.jpg")
 img_rgb1 = image.img
 img_hsv1 = mpl.colors.rgb_to_hsv(img_rgb1[...,:3]/255.0) * 255
 
@@ -181,37 +177,87 @@ axs[2,2].imshow(img_hsv1[...,2], vmin=0, vmax=255, cmap="Greys");
 fig.tight_layout(pad=0)
 
 
-# In[140]:
+# In[81]:
 
 
 
-image = EyeTraumaAnalysis.Image("data/01_raw/00004_li.jpg")
+image = EyeTraumaAnalysis.Image("data/01_raw/11006.jpg")
 
-import cv2
-frame_HSV = cv2.cvtColor(image.img[...,:3], cv2.COLOR_RGB2HSV)
-frame_threshold1 = cv2.inRange(frame_HSV, (0, 0, 0), (30, 255,255))
+img_hsv = cv2.cvtColor(image.img[...,:3], cv2.COLOR_RGB2HSV)
+frame_threshold1 = cv2.inRange(img_hsv, (0, 0, 0), (30, 255,255))
 target1 = cv2.bitwise_and(image.img,image.img, mask=frame_threshold1)
 
-frame_threshold2 = cv2.inRange(frame_HSV, (0, 50, 0), (255, 255,255))
+frame_threshold2 = cv2.inRange(img_hsv, (0, 50, 0), (255, 255,255))
 target2 = cv2.bitwise_and(image.img,image.img, mask=frame_threshold2)
 
-frame_threshold3 = cv2.inRange(frame_HSV, (0, 0, 00), (255, 255,160))
+frame_threshold3 = cv2.inRange(img_hsv, (0, 0, 00), (255, 255,160))
 target3 = cv2.bitwise_and(image.img,image.img, mask=frame_threshold3)
 
 fig, axs = plt.subplots(2, 3, figsize=(8,4))
-axs[0,0].axis("off")
-axs[0,1].imshow(image.img)
-axs[0,2].axis("off")
+axs[0,0].imshow(image.img)
 
 axs[1,0].imshow(target1);
 axs[1,1].imshow(target2);
 axs[1,2].imshow(target3);
 
+ht, wd, ch = img_hsv.shape;
+bottom_region_hsv = img_hsv[int(ht*9/10):,:,:3]  # :3 removes alpha channel
+percentiles = np.quantile(bottom_region_hsv,[0.01, 0.99], axis=[0,1])    #
+frame_threshold = cv2.inRange(img_hsv, percentiles[0], percentiles[1])
 
-# In[100]:
+target4 = cv2.bitwise_and(image.img,image.img, mask=frame_threshold)
+kernel = np.ones((int(wd/50),int(ht/50)),np.uint8)
+target4 = cv2.morphologyEx(target4, cv2.MORPH_OPEN, kernel)
+target4 = cv2.morphologyEx(target4, cv2.MORPH_CLOSE, kernel)
+axs[0,1].imshow(target4);
+#axs[0,2].imshow(cv2.cvtColor(bottom_region_hsv, cv2.COLOR_HSV2RGB));
+axs[0,2].imshow(cv2.Canny(image.img, threshold1=90, threshold2=100), cmap="gray");
 
 
-plt.subplots()
+# In[91]:
+
+
+image = EyeTraumaAnalysis.Image("data/01_raw/11006.jpg")
+img_hsv = cv2.cvtColor(image.img[...,:3], cv2.COLOR_RGB2HSV)
+img_gray = cv2.cvtColor(image.img[...,:3], cv2.COLOR_RGB2GRAY)
+#img_blur = cv2.GaussianBlur(img_gray, (4,4), 0)
+
+fig, axs = plt.subplots(2, 3, figsize=(8,4))
+axs[0,0].imshow(image.img)
+
+laplacian = cv2.Laplacian(img_gray,cv2.CV_64F)
+axs[0,1].imshow(cv2.Canny(image.img, threshold1=90, threshold2=100), cmap="gray");
+axs[0,2].imshow(laplacian, cmap="gray");
+
+# Sobel Edge Detection
+sobelx = cv2.Sobel(src=img_gray, ddepth=cv2.CV_64F, dx=1, dy=0, ksize=5) # Sobel Edge Detection on the X axis
+sobely = cv2.Sobel(src=img_gray, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=5) # Sobel Edge Detection on the Y axis
+sobelxy = cv2.Sobel(src=img_gray, ddepth=cv2.CV_64F, dx=1, dy=1, ksize=5) # Combined X and Y Sobel Edge Detection
+# Display Sobel Edge Detection Images
+
+axs[1,0].imshow(sobelx, cmap="gray");
+axs[1,1].imshow(sobely, cmap="gray");
+axs[1,2].imshow(sobelxy, cmap="gray");
+#axs[0,2].imshow(cv2.cvtColor(bottom_region_hsv, cv2.COLOR_HSV2RGB));
+
+
+# In[51]:
+
+
+zimage.img[frame_threshold]
+
+
+# In[46]:
+
+
+percentiles = np.quantile(bottom_region,[0.1, 0.9], axis=[0,1])
+cv2.inRange()
+
+
+# In[18]:
+
+
+ht
 
 
 # In[ ]:

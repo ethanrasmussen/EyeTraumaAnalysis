@@ -169,7 +169,7 @@ def get_segments(img, interval_deg:int, wd_px:int, center:tuple = None, side_lef
 # TODO: tweak Canny edge detection or find alternative edge detection method that functions well
 # goal: detect limbus within individual segments
 def canny_edges(image_img):
-    return cv2.Canny(image_img, 100, 200)
+    return cv2.Canny(image_img, threshold1=100, threshold2=200)
 
 
 def show_canny(img_img):
