@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/radialSegmentation.iml" filepath="$PROJECT_DIR$/.idea/radialSegmentation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/EyeTraumaAnalysis.iml" filepath="$PROJECT_DIR$/.idea/EyeTraumaAnalysis.iml" />
     </modules>
   </component>
 </project>

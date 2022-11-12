@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[1]:
 
 
 import os
@@ -21,7 +21,7 @@ import EyeTraumaAnalysis
 importlib.reload(EyeTraumaAnalysis);
 
 
-# In[5]:
+# In[2]:
 
 
 import numpy as np
@@ -29,7 +29,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-# In[6]:
+# In[3]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/00001_li.jpg")
