@@ -29,13 +29,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-# In[10]:
-
-
-vars(EyeTraumaAnalysis)
-
-
-# In[7]:
+# In[3]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/00001_li.jpg")
