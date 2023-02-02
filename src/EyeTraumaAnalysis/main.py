@@ -30,7 +30,10 @@ class Image:
             self.center = center
             self.original_channel_ct = img.shape[2:]
         else:
-            index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
+            if ".jpg" in filename:
+                index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
+            else if ".PNG" in filename:
+                index = int(filename.split(".PNG")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
             self.img = cv2.imread(filename, cv2.IMREAD_COLOR)
             self.img = self.img[..., [2,1,0]]  # convert BGR to RGB color scheme
             self.original_channel_ct = self.img.shape[2:]
