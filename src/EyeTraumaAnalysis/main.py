@@ -32,7 +32,7 @@ class Image:
         else:
             if ".jpg" in filename:
                 index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
-            else if ".PNG" in filename:
+            elif ".PNG" in filename:
                 index = int(filename.split(".PNG")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
             self.img = cv2.imread(filename, cv2.IMREAD_COLOR)
             self.img = self.img[..., [2,1,0]]  # convert BGR to RGB color scheme
