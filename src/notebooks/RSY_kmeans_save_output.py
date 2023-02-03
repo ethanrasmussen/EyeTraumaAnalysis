@@ -52,7 +52,24 @@ import cv2
 images = os.listdir('./data/01_raw/Ergonautus/Full Dataset/')
 
 
-# In[6]:
+# In[59]:
+
+
+def get_spatial_metrics(mask):
+    # scipy can perform the mean (center of mass), but not the standard deviation
+    # spatial_means = snd.center_of_mass(mask)
+    x = np.linspace(0, 1, mask.shape[1])
+    y = np.linspace(0, 1, mask.shape[0])
+    xgrid, ygrid = np.meshgrid(x, y)
+    grids = {"x": xgrid, "y":ygrid}
+    to_return = {"x":{}, "y":{}}
+    for ind, grid in grids.items():
+        to_return[ind]["mean"] = np.mean(grids[ind], where=mask.astype(bool))
+        to_return[ind]["sd"] = np.std(grids[ind], where=mask.astype(bool))
+    return to_return
+
+
+# In[80]:
 
 
 ### Create K means clusters and masks
@@ -82,6 +99,7 @@ for ind in range(K):
 summed_image = np.zeros(kmeans_thresholds[0].shape)
 for ind in range(K):
     summed_image += int(ind/K*255) * kmeans_thresholds[ind]
+centers_indices = centers_sorted.argsort(axis=0)   # sorts each column separately
 
 
 # In[7]:
@@ -96,25 +114,19 @@ im3=axs.flat[3].imshow(summed_image, cmap="terrain")
 plt.colorbar(im3,ax=axs.flat[3], shrink=0.8)
 
 
-# In[53]:
+# In[62]:
 
 
-def get_spatial_metrics(mask):
-    # scipy can perform the mean (center of mass), but not the standard deviation
-    # spatial_means = snd.center_of_mass(mask)
-    x = np.arange(0, mask.shape[1])
-    y = np.arange(0, mask.shape[0])
-    xgrid, ygrid = np.meshgrid(x, y)
-    grids = {"x": xgrid, "y":ygrid}
-    to_return = {"x":{}, "y":{}}
-    for ind, grid in grids.items():
-        to_return[ind]["mean"] = np.mean(grids[ind], where=mask.astype(bool))
-        to_return[ind]["sd"] = np.std(grids[ind], where=mask.astype(bool))
-    return to_return
-    pass
+get_spatial_metrics(kmeans_thresholds[0])
 
 
-# In[8]:
+# In[82]:
+
+
+
+
+
+# In[123]:
 
 
 ### Per Cluster Masking ### <-- for individual image use
@@ -124,18 +136,26 @@ col_ct = int(np.ceil(K/row_ct))
 fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
 for ind in range(row_ct*col_ct):
     if ind < K:
-        target1 = cv2.bitwise_and(image.img,image.img, mask=~kmeans_thresholds[ind])
+        #target1 = cv2.bitwise_and(image.img,image.img, mask=~kmeans_thresholds[ind])
+        target1 = image.img.copy()
+        target1[kmeans_thresholds[ind].astype(bool)] = [127,255,127,255]
         axs.flat[ind].imshow(target1)
-
-        spatial_mean = snd.center_of_mass(kmeans_thresholds[ind])
-        x = np.arange(0, target1.shape[1])
-        y = np.arange(0, target1.shape[0])
-        xgrid, ygrid = np.meshgrid(x, y)
-        xgrid = xgrid.flatten()[kmeans_thresholds[ind].flatten()]
-        ygrid = ygrid.flatten()[kmeans_thresholds[ind].flatten()]
+        spatial_metrics = get_spatial_metrics(kmeans_thresholds[ind])
+        hsv_rank = centers_indices[ind]
+        hsv_center = centers_sorted[ind]
+        # Draw left title
         axs.flat[ind].set_title(
-            f"Mean: {spatial_mean[1]:.2f}, {spatial_mean[0]:.2f}\n" +
-            f"SD: {snd.mean(xgrid):.2f}, {snd.mean(ygrid):.2f}"
+            "HSV \n"+
+            f"#{hsv_rank[0]+1}, #{hsv_rank[1]+1}, #{hsv_rank[2]+1}" + "\n" +
+            f"({hsv_center[0]}, {hsv_center[1]}, {hsv_center[2]})",
+            fontsize=8, loc="left"
+        )
+        # Draw right title
+        axs.flat[ind].set_title(
+            f"Location:" + "\n"+
+            f"({spatial_metrics['x']['mean']*100:.1f}, {spatial_metrics['y']['mean']:.1%})" + "\n" +
+            f"({spatial_metrics['x']['sd']*100:.1f}, {spatial_metrics['y']['sd']:.1%})",
+            fontsize=8, loc="right", fontfamily="monospace",
         )
         # axs.flat[ind].set_title(
         #     f"HSV center: [{centers_sorted[ind,0]},{centers_sorted[ind,1]},{centers_sorted[ind,2]}]" )
@@ -143,6 +163,18 @@ for ind in range(row_ct*col_ct):
     else:
         # remove axes for empty cells
         axs.flat[ind].axis("off")
+
+
+# In[101]:
+
+
+target1[kmeans_thresholds[ind].astype(bool)]
+
+
+# In[102]:
+
+
+image.img.shape
 
 
 # In[23]:
