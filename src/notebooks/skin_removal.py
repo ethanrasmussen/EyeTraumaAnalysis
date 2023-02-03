@@ -15,13 +15,13 @@ if directory_path not in sys.path:
 import EyeTraumaAnalysis
 
 
-# In[ ]:
+# In[2]:
 
 
 importlib.reload(EyeTraumaAnalysis);
 
 
-# In[2]:
+# In[3]:
 
 
 import numpy as np
@@ -31,7 +31,7 @@ import matplotlib as mpl
 import cv2
 
 
-# In[126]:
+# In[4]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/11000.jpg")
@@ -51,7 +51,7 @@ axs[1].spines["left"].set_visible(False)
 axs[1].spines["right"].set_visible(False)
 
 
-# In[130]:
+# In[5]:
 
 
 img_rgb = image.img
@@ -75,7 +75,7 @@ axs[2].legend();
 fig.suptitle("Color Histogram");
 
 
-# In[151]:
+# In[6]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/00001_li.jpg")
@@ -106,7 +106,7 @@ for ind, ax in enumerate(axs[1:,:].reshape(-1)):
 #plt.hist(img_hsv[...,1].ravel(),256,[0,256],density=True, alpha=.3, edgecolor="green");
 
 
-# In[113]:
+# In[7]:
 
 
 img_rgb1 = image.img
@@ -148,7 +148,7 @@ for ind, ax in enumerate(axs[3:,:].reshape(-1)):
     ax.legend()
 
 
-# In[152]:
+# In[8]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/00001_li.jpg")
@@ -177,7 +177,7 @@ axs[2,2].set_title("Brightness (B or V)")
 fig.tight_layout(pad=0)
 
 
-# In[165]:
+# In[9]:
 
 
 def show_image_seg_approaches(image, plot_region_boundaries=False):
@@ -210,10 +210,10 @@ def show_image_seg_approaches(image, plot_region_boundaries=False):
 
     center_region_mask = np.zeros(img_hsv.shape[:2]);
     center_region_mask = cv2.circle(center_region_mask, center, int(ht/10), 255, -1)
-    center_region_hsv = img_hsv.reshape( (-1,ch) )[center_region_mask.flatten().astype(bool),:]
+    center_region_hsv = img_hsv.reshape( (-1,ch) )[center_region_mask.flatten().astype(bool),:] # flatten circle array
     percentiles2 = np.quantile(center_region_hsv,[0.01, 0.99], axis=[0])    #
     frame_threshold5 = cv2.inRange(img_hsv, percentiles2[0], percentiles2[1])
-    frame_threshold5 = cv2.morphologyEx(frame_threshold5, cv2.MORPH_CLOSE, kernel)
+    frame_threshold5 = cv2.morphologyEx(frame_threshold5, cv2.MORPH_CLOSE, kernel) # dilation/erosion
     frame_threshold5 = cv2.morphologyEx(frame_threshold5, cv2.MORPH_OPEN, kernel)
     kernel = np.ones((int(wd/50),int(ht/50)),np.uint8)
     target5 = cv2.bitwise_and(image.img,image.img, mask=~frame_threshold5)
@@ -244,7 +244,7 @@ image = EyeTraumaAnalysis.Image("data/01_raw/00010_li.jpg")
 show_image_seg_approaches(image, plot_region_boundaries=False)
 
 
-# In[86]:
+# In[10]:
 
 
 image = EyeTraumaAnalysis.Image("data/01_raw/11006.jpg")
@@ -281,7 +281,7 @@ axs[1,2].set_title("Sobel Method: x and y");
 fig.suptitle("Edge Detection Methods")
 
 
-# In[95]:
+# In[11]:
 
 
 [
