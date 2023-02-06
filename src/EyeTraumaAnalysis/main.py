@@ -184,6 +184,31 @@ def show_canny(img_img):
     plt.show()
 
 
+
+def copy_dataset_to_main_folder():
+    # Copy files from Ergonautas (Chicago Face Dataset) folder to main folder
+    import shutil, os
+
+    folder = "./data/01_raw/Ergonautus/Full Dataset/"
+    image_filenames = os.listdir(folder)
+
+    for filename_old in image_filenames:
+        [file_num_old, file_extension_old] = filename_old.split(".")
+        file_num = int(file_num_old)
+        # The original number system was messed up. It started from 000 and ended at 580 inclusive,
+        # but skipped 205 (went directly from 204 to 206)
+        if file_num > 205:
+            file_num -= 1
+        # Add 14000 to start with new first two digits, separating this dataset from the other datasets (e.g. diseased,
+        # our own eyes, other healthy datasets from online)
+        file_num += 14000
+        filename_new = f"{file_num}.{file_extension_old.lower()}"
+        file_path_old = os.path.join(folder, filename_old)
+        file_path_new = os.path.join("./data/01_raw/", filename_new)
+        shutil.copy(file_path_old, file_path_new)
+        print(file_path_old, file_path_new)
+
+
 #############################################################################
 ################# DEPRECATED CODE:
 #############################################################################
