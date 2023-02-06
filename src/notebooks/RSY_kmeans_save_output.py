@@ -93,9 +93,11 @@ res_bgr = cv2.cvtColor(res_hsv2, cv2.COLOR_HSV2BGR)
 
 # sort centers by HSV "value" - aka sort by grayscale
 centers_sorted = centers[centers[:, 2].argsort()]
+
 kmeans_thresholds = []
 for ind in range(K):
     kmeans_thresholds.append(cv2.inRange(res_hsv2,centers_sorted[ind],centers_sorted[ind]))
+
 summed_image = np.zeros(kmeans_thresholds[0].shape)
 for ind in range(K):
     summed_image += int(ind/K*255) * kmeans_thresholds[ind]

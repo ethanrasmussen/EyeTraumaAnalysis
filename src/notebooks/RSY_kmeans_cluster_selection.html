@@ -14583,8 +14583,12 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">importlib</span>
-
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">scipy.ndimage</span> <span class="k">as</span> <span class="nn">snd</span>
+<span class="kn">import</span> <span class="nn">skimage</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
 
 <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;../..&quot;</span><span class="p">)</span>
 <span class="n">directory_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">))</span>
@@ -14622,6 +14626,354 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>/Users/ryerrabelli/Library/CloudStorage/GoogleDrive-ryerrabelli@gmail.com/My Drive/Computer Backups/Rahul Yerrabelli drive/PythonProjects/EyeTraumaAnalysis/src
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">labelbox</span>  <span class="c1"># labelbox.Client, MALPredictionImport, LabelImport</span>
+<span class="kn">import</span> <span class="nn">labelbox.schema.ontology</span> <span class="c1"># OntologyBuilder, Tool, Classification, Option</span>
+<span class="kn">import</span> <span class="nn">labelbox.data.annotation_types</span>
+<span class="sd">&quot;&quot;&quot; from labelbox.data.annotation_types import (</span>
+<span class="sd">    Label, ImageData, ObjectAnnotation, MaskData,</span>
+<span class="sd">    Rectangle, Point, Line, Mask, Polygon,</span>
+<span class="sd">    Radio, Checklist, Text,</span>
+<span class="sd">    ClassificationAnnotation, ClassificationAnswer</span>
+<span class="sd">)&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">labelbox.data.serialization</span> <span class="c1"># NDJsonConverter</span>
+<span class="kn">import</span> <span class="nn">labelbox.schema.media_type</span> <span class="c1"># MediaType</span>
+
+<span class="kn">import</span> <span class="nn">labelbox.schema.queue_mode</span> <span class="c1"># QueueMode</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Labelbox API stored in separate file since it is specific for a labelbox</span>
+<span class="c1">#account and shouldn&#39;t be committed to git. Contact the</span>
+<span class="c1"># team (i.e. Rahul Yerrabelli) in order to access to the data on your own account.</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;auth/LABELBOX_API_KEY.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+  <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+<span class="n">LB_API_KEY</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;API_KEY&quot;</span><span class="p">]</span>
+<span class="k">del</span> <span class="n">json_data</span>   <span class="c1"># delete sensitive info</span>
+
+<span class="n">PROJECT_ID</span> <span class="o">=</span> <span class="s2">&quot;clds7rw8a17bd07140ida09o9&quot;</span>
+<span class="n">DATASET_ID</span> <span class="o">=</span> <span class="s2">&quot;cldscwrp0071k07zf84smghrw&quot;</span>
+<span class="n">ONTOLOGY_ID</span> <span class="o">=</span> <span class="s2">&quot;cldsdg4re1xo707xnbvnadmuw&quot;</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">labelbox</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">LB_API_KEY</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">LB_API_KEY</span>   <span class="c1"># delete sensitive info</span>
+<span class="n">project</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_project</span><span class="p">(</span><span class="n">PROJECT_ID</span><span class="p">)</span>
+<span class="n">dataset_lb</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">DATASET_ID</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">mask_annotation</span> <span class="o">=</span> <span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">annotation_types</span><span class="o">.</span><span class="n">ObjectAnnotation</span><span class="p">(</span>
+  <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="c1"># must match your ontology feature&#39;s name</span>
+  <span class="n">value</span> <span class="o">=</span> <span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">annotation_types</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask_data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[342]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">create_kmeans</span><span class="p">(</span><span class="n">img_bgr</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>  <span class="c1"># K is number of clusters</span>
+    <span class="c1">#np.all(skimage.io.imread(&quot;data/01_raw/14579.png&quot;) == skimage.io.imread(data_row.row_data))</span>
+    <span class="n">img_hsv</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">img_bgr</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2HSV</span><span class="p">)</span>
+    <span class="n">Z_hsv</span> <span class="o">=</span> <span class="n">img_hsv</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+    <span class="c1"># convert to np.float32</span>
+    <span class="n">Z_hsv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">Z_hsv</span><span class="p">)</span>
+    <span class="c1"># define criteria, number of clusters(K) and apply kmeans()</span>
+    <span class="n">criteria</span> <span class="o">=</span> <span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">TERM_CRITERIA_EPS</span> <span class="o">+</span> <span class="n">cv2</span><span class="o">.</span><span class="n">TERM_CRITERIA_MAX_ITER</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">ret</span><span class="p">,</span><span class="n">label</span><span class="p">,</span><span class="n">centers</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">kmeans</span><span class="p">(</span><span class="n">Z_hsv</span><span class="p">,</span><span class="n">K</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">criteria</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="n">cv2</span><span class="o">.</span><span class="n">KMEANS_RANDOM_CENTERS</span><span class="p">)</span>
+    <span class="c1"># Now convert back into uint8, and make original image</span>
+    <span class="n">centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span>
+    <span class="n">res_hsv</span> <span class="o">=</span> <span class="n">centers</span><span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">flatten</span><span class="p">()]</span>
+    <span class="n">res_hsv2</span> <span class="o">=</span> <span class="n">res_hsv</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">img_hsv</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">res_bgr</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">res_hsv2</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_HSV2BGR</span><span class="p">)</span>
+    <span class="c1"># res2 = cv2.cvtColor(res2, cv2.COLOR_RGB2GRAY)</span>
+
+
+    <span class="c1"># sort centers by HSV &quot;value&quot; - aka sort by grayscale</span>
+    <span class="n">centers</span> <span class="o">=</span> <span class="n">centers</span><span class="p">[</span><span class="n">centers</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
+
+    <span class="c1">#centers_indices = np.argsort(centers, axis=0)   # sorts each column separately</span>
+
+    <span class="n">kmeans_masks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
+        <span class="c1"># Can use opencv in range or kmeans</span>
+        <span class="c1">#kmeans_masks.append(cv2.inRange(res_hsv2, centers[ind], centers[ind]))</span>
+        <span class="n">kmeans_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">res_hsv2</span> <span class="o">==</span> <span class="n">centers</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+        <span class="c1">#kmeans_masks.append( res_hsv2==centers[ind])</span>
+    <span class="n">kmeans_masks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">kmeans_masks</span><span class="p">)</span>
+
+    <span class="c1"># can&#39;t make centers a DataFrame until now since needed numpy for opencv in range or numpy comparison</span>
+    <span class="n">centers</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">,</span><span class="s2">&quot;S&quot;</span><span class="p">,</span><span class="s2">&quot;V&quot;</span><span class="p">])</span>
+    <span class="n">mins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">img_hsv</span><span class="p">[</span><span class="n">kmeans_mask</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">kmeans_mask</span> <span class="ow">in</span> <span class="n">kmeans_masks</span><span class="p">])</span>
+    <span class="n">maxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">img_hsv</span><span class="p">[</span><span class="n">kmeans_mask</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">kmeans_mask</span> <span class="ow">in</span> <span class="n">kmeans_masks</span><span class="p">])</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">maxs</span> <span class="o">-</span> <span class="n">mins</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">,</span><span class="s2">&quot;S&quot;</span><span class="p">,</span><span class="s2">&quot;V&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">centers</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">res_bgr</span><span class="p">,</span> <span class="n">kmeans_masks</span>
+
+<span class="k">def</span> <span class="nf">get_spatial_metrics</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+    <span class="c1"># scipy can perform the mean (center of mass), but not the standard deviation</span>
+    <span class="c1"># spatial_means = snd.center_of_mass(mask)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">xgrid</span><span class="p">,</span> <span class="n">ygrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">grids</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">xgrid</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span><span class="n">ygrid</span><span class="p">}</span>
+    <span class="n">to_return</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:{},</span> <span class="s2">&quot;y&quot;</span><span class="p">:{}}</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">grid</span> <span class="ow">in</span> <span class="n">grids</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">grids</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">where</span><span class="o">=</span><span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">))</span>
+        <span class="n">to_return</span><span class="p">[</span><span class="n">ind</span><span class="p">][</span><span class="s2">&quot;sd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">grids</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">where</span><span class="o">=</span><span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">to_return</span>
+
+
+<span class="k">def</span> <span class="nf">get_kmeans_metrics</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">kmeans_masks</span><span class="p">):</span>
+    <span class="n">spatial_metrics_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">get_spatial_metrics</span><span class="p">(</span><span class="n">kmeans_mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">kmeans_mask</span> <span class="ow">in</span> <span class="n">kmeans_masks</span><span class="p">]</span>
+    <span class="n">spatial_metrics_pd</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">spatial_metrics</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">spatial_metrics</span> <span class="ow">in</span> <span class="n">spatial_metrics_list</span><span class="p">],</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">spatial_metrics</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">spatial_metrics</span> <span class="ow">in</span> <span class="n">spatial_metrics_list</span><span class="p">],}),</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">spatial_metrics</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="s2">&quot;sd&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">spatial_metrics</span> <span class="ow">in</span> <span class="n">spatial_metrics_list</span><span class="p">],</span>
+        <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">spatial_metrics</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][</span><span class="s2">&quot;sd&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">spatial_metrics</span> <span class="ow">in</span> <span class="n">spatial_metrics_list</span><span class="p">],</span>
+    <span class="p">})],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Mean&quot;</span><span class="p">,</span><span class="s2">&quot;SD&quot;</span><span class="p">])</span>
+
+    <span class="n">area_fractions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">kmeans_mask</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">kmeans_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">kmeans_mask</span> <span class="ow">in</span>
+                               <span class="n">kmeans_masks</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_tuples</span><span class="p">([(</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)]))</span>
+    <span class="n">color_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">centers</span><span class="p">,</span> <span class="n">ranges</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Center&quot;</span><span class="p">,</span><span class="s2">&quot;Range&quot;</span><span class="p">])</span>
+
+    <span class="n">all_metrics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">color_metrics</span><span class="p">,</span> <span class="n">spatial_metrics_pd</span><span class="p">,</span> <span class="n">area_fractions</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Color&quot;</span><span class="p">,</span><span class="s2">&quot;Location&quot;</span><span class="p">,</span><span class="s2">&quot;Area&quot;</span><span class="p">])</span>
+    <span class="n">all_metrics_ranks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">all_metrics</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">all_metrics</span><span class="p">,</span> <span class="n">all_metrics_ranks</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Values&quot;</span><span class="p">,</span><span class="s2">&quot;Ranks&quot;</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">choose_kmeans_cluster</span><span class="p">(</span><span class="n">metrics</span><span class="p">):</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">metrics</span><span class="p">[(</span><span class="s2">&quot;Values&quot;</span><span class="p">,</span><span class="s2">&quot;Location&quot;</span><span class="p">,</span><span class="s2">&quot;SD&quot;</span><span class="p">,</span><span class="s2">&quot;x y&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">metrics</span><span class="p">[</span>
+        <span class="p">[(</span><span class="s2">&quot;Values&quot;</span><span class="p">,</span><span class="s2">&quot;Location&quot;</span><span class="p">,</span><span class="s2">&quot;SD&quot;</span><span class="p">,</span><span class="s2">&quot;x&quot;</span><span class="p">),</span>
+         <span class="p">(</span><span class="s2">&quot;Values&quot;</span><span class="p">,</span><span class="s2">&quot;Location&quot;</span><span class="p">,</span><span class="s2">&quot;SD&quot;</span><span class="p">,</span><span class="s2">&quot;y&quot;</span><span class="p">)]]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># get max of x and y SD</span>
+    <span class="n">likely</span> <span class="o">=</span> <span class="n">metrics</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;Ranks&quot;</span><span class="p">][</span><span class="s2">&quot;Color&quot;</span><span class="p">][</span><span class="s2">&quot;Center&quot;</span><span class="p">][</span><span class="s2">&quot;V&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;Values&quot;</span><span class="p">][</span><span class="s2">&quot;Location&quot;</span><span class="p">][</span><span class="s2">&quot;Mean&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;Values&quot;</span><span class="p">][</span><span class="s2">&quot;Location&quot;</span><span class="p">][</span><span class="s2">&quot;Mean&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.7</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;Values&quot;</span><span class="p">][</span><span class="s2">&quot;Location&quot;</span><span class="p">][</span><span class="s2">&quot;Mean&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;Values&quot;</span><span class="p">][</span><span class="s2">&quot;Location&quot;</span><span class="p">][</span><span class="s2">&quot;Mean&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.7</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;Values&quot;</span><span class="p">][</span><span class="s2">&quot;Location&quot;</span><span class="p">][</span><span class="s2">&quot;SD&quot;</span><span class="p">][</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.25</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s2">&quot;Values&quot;</span><span class="p">][</span><span class="s2">&quot;Location&quot;</span><span class="p">][</span><span class="s2">&quot;SD&quot;</span><span class="p">][</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="c1"># trim down further</span>
+    <span class="k">if</span> <span class="n">likely</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">likely</span> <span class="o">=</span> <span class="n">likely</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Values&quot;</span><span class="p">,</span><span class="s2">&quot;Location&quot;</span><span class="p">,</span><span class="s2">&quot;SD&quot;</span><span class="p">,</span><span class="s2">&quot;x y&quot;</span><span class="p">))[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">likely</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[343]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">centers</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">res_bgr</span><span class="p">,</span> <span class="n">kmeans_masks</span> <span class="o">=</span> <span class="n">create_kmeans</span><span class="p">(</span><span class="n">img_bgr</span><span class="p">)</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="n">get_kmeans_metrics</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">kmeans_masks</span><span class="p">)</span>
+<span class="n">chosen</span> <span class="o">=</span> <span class="n">choose_kmeans_cluster</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+<span class="c1"># get combined masks of the clusters chosen. The .any() applies an OR so only a pixel needs to be in only one cluster</span>
+<span class="c1"># to be included in the combined mask</span>
+<span class="n">kmeans_masks_chosen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">kmeans_masks</span><span class="p">[</span><span class="n">chosen</span><span class="o">.</span><span class="n">index</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[392]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">kmeans_masks_chosens</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">data_row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset_lb</span><span class="o">.</span><span class="n">export_data_rows</span><span class="p">()):</span>
+
+    <span class="c1"># read the image from the cloud</span>
+    <span class="n">img_bgr</span> <span class="o">=</span> <span class="n">skimage</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">data_row</span><span class="o">.</span><span class="n">row_data</span><span class="p">)</span>
+    <span class="c1"># Confirmed that the image from Labelbox is identical to the local image</span>
+    <span class="c1">#np.all(skimage.io.imread(f&quot;data/01_raw/{data_row.external_id}.png&quot;) == img_bgr)</span>
+
+    <span class="c1"># apply kmeans on the image and choose the best cluster</span>
+    <span class="n">centers</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">res_bgr</span><span class="p">,</span> <span class="n">kmeans_masks</span> <span class="o">=</span> <span class="n">create_kmeans</span><span class="p">(</span><span class="n">img_bgr</span><span class="p">)</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">get_kmeans_metrics</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">ranges</span><span class="p">,</span> <span class="n">kmeans_masks</span><span class="p">)</span>
+    <span class="n">chosen</span> <span class="o">=</span> <span class="n">choose_kmeans_cluster</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+    <span class="c1"># get combined masks of the clusters chosen. The .any() applies an OR so only a pixel needs to be in only one cluster</span>
+    <span class="c1"># to be included in the combined mask</span>
+    <span class="n">kmeans_masks_chosen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">kmeans_masks</span><span class="p">[</span><span class="n">chosen</span><span class="o">.</span><span class="n">index</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">kmeans_masks_chosens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kmeans_masks_chosen</span><span class="p">)</span>
+
+    <span class="c1"># Append to list of suggested labels</span>
+    <span class="c1"># astype converts from bool to uin8. Has to be uint8 not np.int64; otherwise throws an error since 0-255 not</span>
+    <span class="c1"># guaranteed</span>
+    <span class="n">lb_mask_data</span> <span class="o">=</span> <span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">annotation_types</span><span class="o">.</span><span class="n">MaskData</span><span class="o">.</span><span class="n">from_2D_arr</span><span class="p">(</span><span class="n">kmeans_masks_chosen</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">230</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+    <span class="n">lb_mask_annotation</span> <span class="o">=</span> <span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">annotation_types</span><span class="o">.</span><span class="n">ObjectAnnotation</span><span class="p">(</span>
+      <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Conjunctiva&quot;</span><span class="p">,</span> <span class="c1"># must match your ontology feature&#39;s name</span>
+      <span class="n">value</span> <span class="o">=</span> <span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">annotation_types</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">lb_mask_data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">label</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">annotation_types</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">annotation_types</span><span class="o">.</span><span class="n">ImageData</span><span class="p">(</span><span class="n">uid</span><span class="o">=</span><span class="n">data_row</span><span class="o">.</span><span class="n">uid</span><span class="p">),</span>
+        <span class="n">annotations</span> <span class="o">=</span> <span class="p">[</span> <span class="n">lb_mask_annotation</span> <span class="p">]</span>
+    <span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">ind</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">break</span>
+
+
+<span class="c1"># Convert our label from a Labelbox class object to the underlying NDJSON format required for upload</span>
+<span class="n">label_ndjson</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">labelbox</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">serialization</span><span class="o">.</span><span class="n">NDJsonConverter</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">label</span><span class="p">))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[412]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">ontologies</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_ontologies</span><span class="p">(</span><span class="n">name_contains</span><span class="o">=</span><span class="s2">&quot;eye&quot;</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[419]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">for</span> <span class="n">ont</span> <span class="ow">in</span> <span class="n">ontologies</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ont</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>&lt;Ontology {
+    &#34;classification_schema_count&#34;: 0,
+    &#34;created_at&#34;: &#34;2023-02-06 05:27:36.991000+00:00&#34;,
+    &#34;description&#34;: null,
+    &#34;name&#34;: &#34;EyeTrauma&#34;,
+    &#34;normalized&#34;: {
+        &#34;tools&#34;: [
+            {
+                &#34;schemaNodeId&#34;: &#34;cldsdj2hq40kx071y98ag2lvx&#34;,
+                &#34;featureSchemaId&#34;: &#34;cldsdj2hq40kw071yajag9u0y&#34;,
+                &#34;required&#34;: false,
+                &#34;name&#34;: &#34;Conjunctiva&#34;,
+                &#34;tool&#34;: &#34;superpixel&#34;,
+                &#34;color&#34;: &#34;#1CE6FF&#34;,
+                &#34;archived&#34;: 0,
+                &#34;classifications&#34;: []
+            },
+            {
+                &#34;schemaNodeId&#34;: &#34;cldsdj2hq40kz071yhc3yeg6p&#34;,
+                &#34;featureSchemaId&#34;: &#34;cldsdj2hq40ky071y7mz1cuol&#34;,
+                &#34;required&#34;: false,
+                &#34;name&#34;: &#34;Pupil center&#34;,
+                &#34;tool&#34;: &#34;point&#34;,
+                &#34;color&#34;: &#34;#FF34FF&#34;,
+                &#34;archived&#34;: 0,
+                &#34;classifications&#34;: []
+            }
+        ],
+        &#34;classifications&#34;: [],
+        &#34;relationships&#34;: [],
+        &#34;realTime&#34;: false
+    },
+    &#34;object_schema_count&#34;: 2,
+    &#34;uid&#34;: &#34;cldsdg4re1xo707xnbvnadmuw&#34;,
+    &#34;updated_at&#34;: &#34;2023-02-06 05:29:54.005000+00:00&#34;
+}&gt;
 </pre>
 </div>
 </div>

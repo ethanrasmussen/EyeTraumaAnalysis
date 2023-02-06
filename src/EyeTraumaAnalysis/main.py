@@ -24,17 +24,22 @@ class Image:
     center = None  # tuple of np.float64
     original_channel_ct: tuple = None  # tuple that is usually length = 1
 
-    def __init__(self, filename: str = None, img=None, center: tuple = None):
+    def __init__(self, filename: str = None, img=None, center: tuple = None, read_from_scikit: bool = False):
         if filename is None:
             self.img = img
             self.center = center
             self.original_channel_ct = img.shape[2:]
         else:
-            if ".jpg" in filename:
-                index = int(filename.split(".jpg")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
-            elif ".PNG" in filename:
-                index = int(filename.split(".PNG")[0].split("/")[-1].replace("_h", "").replace("_li", ""))
-            self.img = cv2.imread(filename, cv2.IMREAD_COLOR)
+            for extension in [".jpg",".JPG",".png",".PNG"]:
+                if extension in filename:
+                    index = int(filename.split(extension)[0].split("/")[-1].replace("_h", "").replace("_li", ""))
+                    break
+
+            if read_from_scikit:
+                import skimage.io  # scikit-image
+                self.img = skimage.io.imread("data/01_raw/14579.png")
+            else:
+                self.img = cv2.imread(filename, cv2.IMREAD_COLOR)
             self.img = self.img[..., [2,1,0]]  # convert BGR to RGB color scheme
             self.original_channel_ct = self.img.shape[2:]
             if self.original_channel_ct == (3,):  # if 3 channel image
