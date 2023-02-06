@@ -24,13 +24,13 @@ import EyeTraumaAnalysis
 print(directory_path)
 
 
-# In[2]:
+# In[3]:
 
 
 importlib.reload(EyeTraumaAnalysis);
 
 
-# In[2]:
+# In[4]:
 
 
 import numpy as np
@@ -46,13 +46,13 @@ import cv2
 # images = ["10030.jpg", "10031.jpg", "10032.jpg", "10033.jpg", "10034.jpg", "10035.jpg", "10036.jpg", "10037.jpg", "10038.jpg", "10039.jpg", "10040.jpg", "10041.jpg", "10042.jpg"]
 
 
-# In[4]:
+# In[5]:
 
 
 images = os.listdir('./data/01_raw/Ergonautus/Full Dataset/')
 
 
-# In[59]:
+# In[6]:
 
 
 def get_spatial_metrics(mask):
@@ -69,7 +69,7 @@ def get_spatial_metrics(mask):
     return to_return
 
 
-# In[80]:
+# In[7]:
 
 
 ### Create K means clusters and masks
@@ -102,7 +102,7 @@ for ind in range(K):
 centers_indices = centers_sorted.argsort(axis=0)   # sorts each column separately
 
 
-# In[7]:
+# In[8]:
 
 
 ### Clustered View ### <-- for individual image use
@@ -114,7 +114,7 @@ im3=axs.flat[3].imshow(summed_image, cmap="terrain")
 plt.colorbar(im3,ax=axs.flat[3], shrink=0.8)
 
 
-# In[62]:
+# In[9]:
 
 
 get_spatial_metrics(kmeans_thresholds[0])
@@ -126,7 +126,7 @@ get_spatial_metrics(kmeans_thresholds[0])
 
 
 
-# In[123]:
+# In[10]:
 
 
 ### Per Cluster Masking ### <-- for individual image use
@@ -244,19 +244,53 @@ for image_sample in images:
     fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
     for ind in range(row_ct*col_ct):
         if ind < K:
-            target1 = cv2.bitwise_and(image.img,image.img, mask=~kmeans_thresholds[ind])
+            #target1 = cv2.bitwise_and(image.img,image.img, mask=~kmeans_thresholds[ind])
+            target1 = image.img.copy()
+            target1[kmeans_thresholds[ind].astype(bool)] = [127,255,127,255]
             axs.flat[ind].imshow(target1)
+            spatial_metrics = get_spatial_metrics(kmeans_thresholds[ind])
+            hsv_rank = centers_indices[ind]
+            hsv_center = centers_sorted[ind]
+            # Draw left title
             axs.flat[ind].set_title(
-            f"Mean: {round(snd.mean(target1), 3)}\nStd: {round(snd.standard_deviation(target1), 3)}"
-        )
+                "HSV \n"+
+                f"#{hsv_rank[0]+1}, #{hsv_rank[1]+1}, #{hsv_rank[2]+1}" + "\n" +
+                f"({hsv_center[0]}, {hsv_center[1]}, {hsv_center[2]})",
+                fontsize=8, loc="left"
+            )
+            # Draw right title
+            axs.flat[ind].set_title(
+                f"Location:" + "\n"+
+                f"({spatial_metrics['x']['mean']*100:.1f}, {spatial_metrics['y']['mean']:.1%})" + "\n" +
+                f"({spatial_metrics['x']['sd']*100:.1f}, {spatial_metrics['y']['sd']:.1%})",
+                fontsize=8, loc="right", fontfamily="monospace",
+            )
             # axs.flat[ind].set_title(
             #     f"HSV center: [{centers_sorted[ind,0]},{centers_sorted[ind,1]},{centers_sorted[ind,2]}]" )
             #axs.flat[ind].imshow(kmeans_thresholds[ind], cmap="gray")
         else:
             # remove axes for empty cells
             axs.flat[ind].axis("off")
-    # plt.savefig(f"{save_directory}\\kmeans_clustering_applied\\K-{K}\\per_cluster_mask\\{image_sample.split('.jpg')[0]}.png", format='png')
     plt.savefig(f"{save_directory}\\kmeans_clustering_applied\\ergonautus-10k\\per_cluster_mask\\{image_sample.split('.PNG')[0]}.png", format='png')
+
+    # row_ct = int(np.sqrt(K))
+    # col_ct = int(np.ceil(K/row_ct))
+    # fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
+    # for ind in range(row_ct*col_ct):
+    #     if ind < K:
+    #         target1 = cv2.bitwise_and(image.img,image.img, mask=~kmeans_thresholds[ind])
+    #         axs.flat[ind].imshow(target1)
+    #         axs.flat[ind].set_title(
+    #         f"Mean: {round(snd.mean(target1), 3)}\nStd: {round(snd.standard_deviation(target1), 3)}"
+    #     )
+    #         # axs.flat[ind].set_title(
+    #         #     f"HSV center: [{centers_sorted[ind,0]},{centers_sorted[ind,1]},{centers_sorted[ind,2]}]" )
+    #         #axs.flat[ind].imshow(kmeans_thresholds[ind], cmap="gray")
+    #     else:
+    #         # remove axes for empty cells
+    #         axs.flat[ind].axis("off")
+    # # plt.savefig(f"{save_directory}\\kmeans_clustering_applied\\K-{K}\\per_cluster_mask\\{image_sample.split('.jpg')[0]}.png", format='png')
+    # plt.savefig(f"{save_directory}\\kmeans_clustering_applied\\ergonautus-10k\\per_cluster_mask\\{image_sample.split('.PNG')[0]}.png", format='png')
 
     # close to prevent overconsumption of memory
     plt.close()
