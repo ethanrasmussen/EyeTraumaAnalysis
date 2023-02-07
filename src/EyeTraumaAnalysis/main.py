@@ -253,3 +253,4 @@ def copy_dataset_to_main_folder():
 #     for i in range(len(imgs)):
 #         plt.subplot(1, 2*len(imgs), i + 1)
 #         plt.imshow(imgs[i])
+
