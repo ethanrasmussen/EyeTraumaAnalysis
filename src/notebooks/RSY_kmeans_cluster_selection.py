@@ -30,7 +30,13 @@ import matplotlib as mpl
 import cv2
 
 
-# In[3]:
+# In[2]:
+
+
+importlib.reload(EyeTraumaAnalysis);
+
+
+# In[8]:
 
 
 import labelbox  # labelbox.Client, MALPredictionImport, LabelImport
@@ -48,7 +54,7 @@ import labelbox.schema.media_type # MediaType
 import labelbox.schema.queue_mode # QueueMode
 
 
-# In[10]:
+# In[9]:
 
 
 # Labelbox API stored in separate file since it is specific for a labelbox
@@ -78,115 +84,21 @@ mask_annotation = labelbox.data.annotation_types.ObjectAnnotation(
 )
 
 
-# In[342]:
+# In[11]:
 
 
-def create_kmeans(img_bgr, K=10):  # K is number of clusters
-    #np.all(skimage.io.imread("data/01_raw/14579.png") == skimage.io.imread(data_row.row_data))
-    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    Z_hsv = img_hsv.reshape((-1,3))
-    # convert to np.float32
-    Z_hsv = np.float32(Z_hsv)
-    # define criteria, number of clusters(K) and apply kmeans()
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    ret,label,centers=cv2.kmeans(Z_hsv,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
-    # Now convert back into uint8, and make original image
-    centers = np.uint8(centers)
-    res_hsv = centers[label.flatten()]
-    res_hsv2 = res_hsv.reshape(img_hsv.shape)
-    res_bgr = cv2.cvtColor(res_hsv2, cv2.COLOR_HSV2BGR)
-    # res2 = cv2.cvtColor(res2, cv2.COLOR_RGB2GRAY)
-
-
-    # sort centers by HSV "value" - aka sort by grayscale
-    centers = centers[centers[:, 2].argsort()]
-
-    #centers_indices = np.argsort(centers, axis=0)   # sorts each column separately
-
-    kmeans_masks = []
-    for ind in range(K):
-        # Can use opencv in range or kmeans
-        #kmeans_masks.append(cv2.inRange(res_hsv2, centers[ind], centers[ind]))
-        kmeans_masks.append( np.all(res_hsv2 == centers[ind], axis=-1) )
-        #kmeans_masks.append( res_hsv2==centers[ind])
-    kmeans_masks = np.array(kmeans_masks)
-
-    # can't make centers a DataFrame until now since needed numpy for opencv in range or numpy comparison
-    centers = pd.DataFrame(centers, columns=["H","S","V"])
-    mins = np.array([np.min(img_hsv[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
-    maxs = np.max([np.min(img_hsv[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
-    ranges = pd.DataFrame(maxs - mins, columns=["H","S","V"])
-    return centers, ranges, res_bgr, kmeans_masks
-
-def get_spatial_metrics(mask):
-    # scipy can perform the mean (center of mass), but not the standard deviation
-    # spatial_means = snd.center_of_mass(mask)
-    x = np.linspace(0, 1, mask.shape[1])
-    y = np.linspace(0, 1, mask.shape[0])
-    xgrid, ygrid = np.meshgrid(x, y)
-    grids = {"x": xgrid, "y":ygrid}
-    to_return = {"x":{}, "y":{}}
-    for ind, grid in grids.items():
-        to_return[ind]["mean"] = np.mean(grids[ind], where=mask.astype(bool))
-        to_return[ind]["sd"] = np.std(grids[ind], where=mask.astype(bool))
-    return to_return
-
-
-def get_kmeans_metrics(centers, ranges, kmeans_masks):
-    spatial_metrics_list = [get_spatial_metrics(kmeans_mask) for kmeans_mask in kmeans_masks]
-    spatial_metrics_pd = pd.concat([pd.DataFrame({
-        "x": [spatial_metrics["x"]["mean"] for spatial_metrics in spatial_metrics_list],
-        "y": [spatial_metrics["y"]["mean"] for spatial_metrics in spatial_metrics_list],}),
-        pd.DataFrame({
-        "x": [spatial_metrics["x"]["sd"] for spatial_metrics in spatial_metrics_list],
-        "y": [spatial_metrics["y"]["sd"] for spatial_metrics in spatial_metrics_list],
-    })], axis=1, keys=["Mean","SD"])
-
-    area_fractions = pd.DataFrame([np.count_nonzero(kmeans_mask)/np.prod(kmeans_mask.shape) for kmeans_mask in
-                               kmeans_masks], columns=pd.MultiIndex.from_tuples([("","")]))
-    color_metrics = pd.concat([centers, ranges], axis=1, keys=["Center","Range"])
-
-    all_metrics = pd.concat([color_metrics, spatial_metrics_pd, area_fractions], axis=1,
-                            keys=["Color","Location","Area"])
-    all_metrics_ranks = np.argsort(all_metrics, axis=0) + 1
-
-    return pd.concat([all_metrics, all_metrics_ranks], axis=1, keys=["Values","Ranks"])
-
-def choose_kmeans_cluster(metrics):
-    metrics = metrics.copy()
-    metrics[("Values","Location","SD","x y")] = metrics[
-        [("Values","Location","SD","x"),
-         ("Values","Location","SD","y")]].max(axis=1) # get max of x and y SD
-    likely = metrics[
-        (metrics["Ranks"]["Color"]["Center"]["V"] >= 5) &
-        (metrics["Values"]["Location"]["Mean"]["x"] >= 0.3) &
-        (metrics["Values"]["Location"]["Mean"]["x"] <= 0.7) &
-        (metrics["Values"]["Location"]["Mean"]["y"] >= 0.3) &
-        (metrics["Values"]["Location"]["Mean"]["y"] <= 0.7) &
-        (metrics["Values"]["Location"]["SD"]["x"] <= 0.25) &
-        (metrics["Values"]["Location"]["SD"]["y"] <= 0.25)
-    ]
-    # trim down further
-    if likely.shape[0] > 2:
-        likely = likely.sort_values(by=("Values","Location","SD","x y"))[:2]
-    return likely
-
-
-# In[343]:
-
-
-centers, ranges, res_bgr, kmeans_masks = create_kmeans(img_bgr)
-metrics = get_kmeans_metrics(centers, ranges, kmeans_masks)
-chosen = choose_kmeans_cluster(metrics)
+centers, ranges, res_bgr, kmeans_masks = EyeTraumaAnalysis.kmeans.create_kmeans(img_bgr)
+metrics = EyeTraumaAnalysis.kmeans.get_kmeans_metrics(centers, ranges, kmeans_masks)
+chosen = EyeTraumaAnalysis.kmeans.choose_kmeans_cluster(metrics)
 # get combined masks of the clusters chosen. The .any() applies an OR so only a pixel needs to be in only one cluster
 # to be included in the combined mask
 kmeans_masks_chosen = np.any(kmeans_masks[chosen.index],axis=0)
 
 
-# In[392]:
+# In[12]:
 
 
-label = []
+labels = []
 kmeans_masks_chosens = []
 
 for ind, data_row in enumerate(dataset_lb.export_data_rows()):
@@ -197,9 +109,9 @@ for ind, data_row in enumerate(dataset_lb.export_data_rows()):
     #np.all(skimage.io.imread(f"data/01_raw/{data_row.external_id}.png") == img_bgr)
 
     # apply kmeans on the image and choose the best cluster
-    centers, ranges, res_bgr, kmeans_masks = create_kmeans(img_bgr)
-    metrics = get_kmeans_metrics(centers, ranges, kmeans_masks)
-    chosen = choose_kmeans_cluster(metrics)
+    centers, ranges, res_bgr, kmeans_masks = EyeTraumaAnalysis.kmeans.create_kmeans(img_bgr)
+    metrics = EyeTraumaAnalysis.kmeans.get_kmeans_metrics(centers, ranges, kmeans_masks)
+    chosen = EyeTraumaAnalysis.kmeans.choose_kmeans_cluster(metrics)
     # get combined masks of the clusters chosen. The .any() applies an OR so only a pixel needs to be in only one cluster
     # to be included in the combined mask
     kmeans_masks_chosen = np.any(kmeans_masks[chosen.index],axis=0)
@@ -209,25 +121,82 @@ for ind, data_row in enumerate(dataset_lb.export_data_rows()):
     # astype converts from bool to uin8. Has to be uint8 not np.int64; otherwise throws an error since 0-255 not
     # guaranteed
     lb_mask_data = labelbox.data.annotation_types.MaskData.from_2D_arr(kmeans_masks_chosen.astype("uint8")*255)
-    color = (28, 230, 255)
+
+    color = (28, 230, 255)   # 1CE6FF
+
+    lb_mask_data = labelbox.data.annotation_types.MaskData(arr= np.zeros(img_bgr.shape[:2] +(3,),dtype='uint8'))
+
+
     lb_mask_annotation = labelbox.data.annotation_types.ObjectAnnotation(
       name = "Conjunctiva", # must match your ontology feature's name
       value = labelbox.data.annotation_types.Mask(mask=lb_mask_data, color=color),
     )
-    label.append(labelbox.data.annotation_types.Label(
+
+    labels.append(labelbox.data.annotation_types.Label(
         data=labelbox.data.annotation_types.ImageData(uid=data_row.uid),
         annotations = [ lb_mask_annotation ]
     ))
 
-    if ind > 3:
+    if ind > 1:
         break
 
 
+# In[13]:
+
+
+labels[0].annotations[0].value.mask.arr.shape
+
+
+# In[14]:
+
+
+labels[0].data
+
+
+# In[19]:
+
+
+radio_annotation = labelbox.data.annotation_types.ClassificationAnnotation(
+  name="health",
+  value=labelbox.data.annotation_types.Radio(answer = labelbox.data.annotation_types.ClassificationAnswer(name =
+                                                                                                          "healthy"))
+)
+
+
+# In[16]:
+
+
+
 # Convert our label from a Labelbox class object to the underlying NDJSON format required for upload
-label_ndjson = list(labelbox.data.serialization.NDJsonConverter.serialize(label))
+labels_ndjson = list(labelbox.data.serialization.NDJsonConverter.serialize(labels))
 
 
-# In[412]:
+# In[30]:
+
+
+labels_ndjson
+
+
+# In[18]:
+
+
+# Upload MAL label for this data row in project
+upload_job = labelbox.MALPredictionImport.create_from_objects(
+    client = client,
+    project_id = project.uid,
+    name="mal_job"+str(uuid.uuid4()),
+    predictions=labels_ndjson)
+
+print("Errors:", upload_job.errors)
+
+
+# In[7]:
+
+
+labels[0].annotations[0].value.mask
+
+
+# In[425]:
 
 
 ontologies = client.get_ontologies(name_contains="eye")
