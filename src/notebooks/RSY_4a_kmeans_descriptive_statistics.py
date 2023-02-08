@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Imports
+
 # In[6]:
 
 
@@ -34,7 +36,19 @@ import plotly.express as px
 import plotly
 
 
-# # Load data from excel
+# # Load metrics
+
+# In[ ]:
+
+
+all_metrics = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
+all_metrics_flat = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
+all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
+
+
+# # Alternatively, recalculate metrics
+
+# ## Load data from excel
 
 # In[5]:
 
@@ -49,7 +63,7 @@ kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correc
 }, na_filter=False) # False na_filters make empty value for str column be "" instead of NaN
 
 
-# # Calculate metrics
+# ## Calculate metrics
 
 # In[7]:
 
@@ -93,29 +107,105 @@ all_metrics = all_metrics[["Labels","Ranks","Values"]]
 all_metrics.index.names = [all_metrics.index.names[0], "Mask"]
 
 
+# ## Create aggregate version of metrics df
+
 # In[16]:
 
 
 all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["median"])[["Ranks","Values"]]
 
+all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["min","median","max"])
+all_metrics_agg.to_excel("outputs/kmeans-descriptive/aggregate.xlsx")
 
-# # Prepare for plot / Create flat version of df
 
-# In[17]:
+# ## Create flat version of metrics df
+
+# In[116]:
 
 
 all_metrics_flat = all_metrics.copy()
 all_metrics_flat.columns = ["-".join(multi_col).rstrip("-") for multi_col in all_metrics.columns]
 all_metrics_flat = all_metrics_flat.reset_index()
+
+# Create tuples of values i.e. "...-HSV" instead of just "...-H"
+current_columns = all_metrics_flat.columns.copy()
+for col in current_columns:
+    suffix = "-H"
+    if col.endswith(suffix):
+        col_prefix = col[0:-len(suffix)]  # get column name up to suffix
+        # create a column that has the values as a tuple
+        all_metrics_flat[col_prefix + "-HSV"] = list(zip(
+            all_metrics_flat[col_prefix+"-H"],
+            all_metrics_flat[col_prefix+"-S"],
+            all_metrics_flat[col_prefix+"-V"],
+        ))
+
+    suffix = "-x"
+    if col.endswith(suffix):
+        col_prefix = col[0:-len(suffix)]  # get column name up to suffix
+
+        # check if column is integers
+        if pd.api.types.is_integer_dtype(all_metrics_flat[col_prefix + suffix]):
+            # create a column that has the values as a tuple
+            all_metrics_flat[col_prefix + "-xy"] = list(zip(
+                all_metrics_flat[col_prefix+"-x"],
+                all_metrics_flat[col_prefix+"-y"],
+            ))
+        else:
+            # create a column that  formatted strings - easier to view if numbers are originally floats instead of
+            # integers
+            all_metrics_flat[col_prefix + "-xy"] =                 all_metrics_flat[col_prefix+"-x"].map("{:.1%}, ".format) +                 all_metrics_flat[col_prefix+"-y"].map("{:.1%}".format)
+
+
 all_metrics_flat["Ranks-Color-Center-V>4"] = all_metrics_flat["Ranks-Color-Center-V"] >4
 all_metrics_flat["Ranks-Color-Center-V>5"] = all_metrics_flat["Ranks-Color-Center-V"] >5
 
+# Get Hue in terms of 360 degrees
+K=10
+angle_per_K = 360/10
+all_metrics_flat["Ranks-Color-Center-H360"] = all_metrics_flat["Ranks-Color-Center-H"] * angle_per_K                                                + np.random.rand(len(all_metrics_flat["Values-Color-Center-H"]))                                              *angle_per_K*0.75-angle_per_K*0.75/2
+all_metrics_flat["Values-Color-Center-H360"] = all_metrics_flat["Values-Color-Center-H"] * 360/256
 
-# In[24]:
+
+# ## Save values so they don't have to be rerun every time
+
+# In[136]:
 
 
-import plotly.express as px
+all_metrics.to_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
+all_metrics_flat.to_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
+all_metrics_agg.to_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_agg.pkl")
 
+all_metrics.to_excel("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".xlsx")
+all_metrics_flat.to_excel("data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".xlsx")
+all_metrics_agg.to_excel("data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".xlsx")
+
+
+# # Prepare for plotting
+
+# In[139]:
+
+
+def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str):
+    fig.write_image("outputs/kmeans-descriptive/" + title + ".png")
+    fig.write_html( "outputs/kmeans-descriptive/" + title + ".html",
+                        full_html=True, include_plotlyjs="directory" )
+
+
+# In[104]:
+
+
+color_discrete_map = {
+    "True":           px.colors.qualitative.Plotly[2], # green
+    "Maybe":          px.colors.qualitative.Plotly[0], # blue
+    "False":          px.colors.qualitative.Plotly[1], # red
+}
+pattern_shape_map = {}
+category_orders = {
+    "Labels-Value": ["False", "Maybe", "True"],
+}
+
+# This is only the start. It will be added to programmatically later
 var_labels = {
     "Labels-Value": "Conjunctiva cluster",
     "Values-Color-Center-H": "Center H",
@@ -131,36 +221,63 @@ var_labels = {
     "Ranks-Color-Mean-V>4": "V Rank >4",
     "Ranks-Color-Mean-V>5": "V Rank >5"
 }
-color_discrete_map = {
-    "True":           px.colors.qualitative.Safe[0], # green
-    "Maybe":          px.colors.qualitative.Safe[2], # blue
-    "False":          px.colors.qualitative.Safe[1], # red
-}
-category_orders = {
-    "Labels-Value": ["False", "Maybe", "True"],
-    }
-for var_label_key in var_labels.copy():
+
+var_labels_copy = var_labels.copy()
+suffixes = ["-H","-x"]
+for var_label_key in var_labels_copy:
+    for suffix in suffixes:
+        if var_label_key.endswith(suffix):
+            sep = suffix[:1]  # should be "-"
+            suffix_letter = suffix[1:]  # should be "-H" or "-x"
+            # Get name up to suffix letter e.g. "Values-Color-Center-"
+            var_label_key_prefix = var_label_key[0:-len(suffix_letter)]
+            # Get all possible suffixes for the prefix i.e. "H", "S", "V"
+            suffix_letter_options = [var_label_key[len(var_label_key_prefix):] for var_label_key in var_labels_copy
+                                          if var_label_key.startswith(var_label_key_prefix)]
+            combined_suffix_letters = "".join(suffix_letter_options)
+            # Get combined value
+            var_label_val_prefix = var_labels[var_label_key_prefix + suffix_letter][:-len(suffix_letter)]
+            combined_var_label_key = var_label_key_prefix + combined_suffix_letters
+            combined_var_label_val = var_label_val_prefix + combined_suffix_letters
+            var_labels[combined_var_label_key] = combined_var_label_val
+
+
+# Add labels for ranks
+var_labels_copy = var_labels.copy()
+for var_label_key in var_labels_copy:
     if var_label_key.startswith("Values-"):
         var_label_key_suffix = var_label_key.split("Values-",maxsplit=1)[-1]
         var_labels[f"Ranks-{var_label_key_suffix}"] = var_labels[var_label_key] + " (Rank)"
+
+#point_hover_data = ["Values-Color-Center-HSV","Ranks-Color-Center-HSV",
+#                    "Values-Location-Mean-xy","Ranks-Location-Mean-xy",
+#                    "Values-Location-SD-xy","Ranks-Location-SD-xy"]
+point_hover_data = {
+    "Values-Color-Center-H": False,
+    "Values-Color-Center-S": False,
+    "Values-Color-Center-V": False,
+    "Ranks-Color-Center-H": False,
+    "Ranks-Color-Center-S": False,
+    "Ranks-Color-Center-V": False,
+    "Values-Color-Center-HSV":True,
+    "Ranks-Color-Center-HSV":True,
+    "Values-Location-Mean-xy":True,
+    "Ranks-Location-Mean-xy":True,
+    "Values-Location-SD-xy":True,
+    "Ranks-Location-SD-xy":True,
+}
+
 plotly_template = "plotly_dark"  #"simple_white"
-
-
-def save_plotly_figure(fig,title):
-    fig.write_image("outputs/kmeans-descriptive/" + title + ".png")
-    fig.write_html( "outputs/kmeans-descriptive/" + title + ".html",
-                        full_html=True,
-                        include_plotlyjs="directory" )
 
 
 # # Plot
 
-# In[25]:
+# In[107]:
 
 
 fig = px.box(all_metrics_flat, x="Labels-Value", y="Values-Color-Center-V", points="all",
              boxmode="group", notched=True, width=500, height=300,
-             category_orders=category_orders, labels=var_labels, template=plotly_template,
+             category_orders=category_orders, labels=var_labels, template=plotly_template
              )
 fig.update_traces(marker=dict(size=2, opacity=0.8))
 title = "Center V box plot"
@@ -168,165 +285,176 @@ save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[52]:
+# In[105]:
 
 
 fig = px.scatter(all_metrics_flat, x="Values-Color-Center-H", y="Values-Color-Center-V",
                  marginal_x="histogram", marginal_y="histogram",
-                 color="Labels-Value", category_orders=category_orders, labels=var_labels, template=plotly_template,)
-fig.update_traces(marker=dict(size=2, opacity=0.8),selector=dict(type="scatter"))
+                 hover_data=point_hover_data,
+                 color="Labels-Value", color_discrete_map=color_discrete_map,
+                 category_orders=category_orders, labels=var_labels, template=plotly_template)
+fig.update_traces(marker=dict(size=2, opacity=0.8), selector=dict(type="scattergl"))
+fig.for_each_trace( lambda trace: trace.update(marker=dict(size=2, opacity=0.8)) if trace.type == "scattergl" else (), )
 fig.show()
 
 
-# In[26]:
+# In[117]:
 
 
 fig = px.scatter_matrix(all_metrics_flat,
                         dimensions=["Values-Color-Center-H", "Values-Color-Center-S", "Values-Color-Center-V",],
-                 color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark",)
+                        hover_data=point_hover_data,
+                        color="Labels-Value", color_discrete_map=color_discrete_map,
+                        category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_traces(marker=dict(size=2, opacity=0.8))
-title = "HSV center scatter matrix"
+title = "HSV scatter matrix- HSV center"
 save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[27]:
+# In[119]:
 
 
-import plotly.express as px
-fig = px.scatter_3d(all_metrics_flat, x="Values-Color-Center-H", y="Values-Color-Center-S",
-                    z="Values-Color-Center-V",
-                    color="Labels-Value", category_orders=category_orders, labels=var_labels, template=plotly_template,)
-fig.update_traces(marker=dict(size=2, opacity=0.8),
-                  selector=dict(mode='markers'))
-title = "HSV 3D scatter"
+fig = px.scatter_3d(all_metrics_flat,
+                    x="Values-Color-Center-H", y="Values-Color-Center-S", z="Values-Color-Center-V",
+                    hover_data=point_hover_data,
+                    color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
+fig.for_each_trace( lambda trace: trace.update(marker=dict(size=2, opacity=0.8),) if trace.mode == "markers" else (), )
+title = "HSV 3D scatter- HSV center"
 save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[92]:
+# In[121]:
 
 
-all_metrics_flat_temp = all_metrics_flat.copy()
-all_metrics_flat_temp["Ranks-Color-Center-H"] =     all_metrics_flat_temp["Ranks-Color-Center-H"] * 360/10  + np.random.rand(len
-                                                                             (all_metrics_flat_temp["Values-Color-Center-H"]))*24-12
-all_metrics_flat_temp["Values-Color-Center-H"] = all_metrics_flat_temp["Values-Color-Center-H"] * 360/256
-fig = px.scatter_polar(all_metrics_flat_temp, theta="Ranks-Color-Center-H", r="Ranks-Color-Center-S",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark",)
+fig = px.scatter_polar(all_metrics_flat, theta="Ranks-Color-Center-H360", r="Ranks-Color-Center-S",
+                    hover_data=point_hover_data,
+                    color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
+
 fig.update_traces(marker=dict(size=4, opacity=0.8))
 fig.show()
 
 
-# In[69]:
+# In[123]:
 
 
-np.median(all_metrics_flat_temp["Values-Color-Center-H"])
-
-
-# In[29]:
-
-
-all_metrics_flat_temp = all_metrics_flat.copy()
-all_metrics_flat_temp["Ranks-Color-Center-H"] = all_metrics_flat_temp["Ranks-Color-Center-H"] * 360/10
-all_metrics_flat_temp["Values-Color-Center-H"] = all_metrics_flat_temp["Values-Color-Center-H"] * 360/256
-
-fig = px.scatter_polar(all_metrics_flat_temp, theta="Values-Color-Center-H", r="Values-Color-Center-S",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark",)
+fig = px.scatter_polar(all_metrics_flat, theta="Values-Color-Center-H", r="Values-Color-Center-S",
+                       hover_data=point_hover_data,
+                    color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_traces(marker=dict(size=2, opacity=0.8))
-title = "HSV H by S polar scatter"
+title = "HSV polar scatter- H by S"
 save_plotly_figure(fig, title)
 fig.show()
 
-fig = px.scatter_polar(all_metrics_flat_temp, theta="Values-Color-Center-H", r="Values-Color-Center-V",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark",)
+fig = px.scatter_polar(all_metrics_flat, theta="Values-Color-Center-H", r="Values-Color-Center-V",
+                   hover_data=point_hover_data,
+                    color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_traces(marker=dict(size=2, opacity=0.8))
-title = "HSV H by V polar scatter"
+title = "HSV polar scatter- H by S"
 save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[30]:
+# In[126]:
 
 
 fig = px.histogram(all_metrics_flat, x="Values-Color-Center-H", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                    color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV H val histogram with box plot"
+title = "HSV histogram with box plot- H val"
 save_plotly_figure(fig, title)
 
 fig = px.histogram(all_metrics_flat, x="Values-Color-Center-S", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                    color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV S val histogram with box plot"
+title = "HSV histogram with box plot- S val"
 save_plotly_figure(fig, title)
 
 fig = px.histogram(all_metrics_flat, x="Values-Color-Center-V", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                    color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV V val histogram with box plot"
+title = "HSV histogram with box plot- V val"
 save_plotly_figure(fig, title)
 
 
-# In[31]:
+# In[127]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent", width=500, height=300,
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                   color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
-title = "HSV H rank histogram with box plot"
+title = "HSV histogram with box plot- H rank"
 save_plotly_figure(fig, title)
 
 fig.show()
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-S", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent", width=500, height=300,
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                   color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
-title = "HSV S rank histogram with box plot"
+title = "HSV histogram with box plot- S rank"
 save_plotly_figure(fig, title)
 
 fig.show()
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-V", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent", width=500, height=300,
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                   color="Labels-Value", color_discrete_map=color_discrete_map,
+                    category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV V rank histogram with box plot"
+title = "HSV histogram with box plot- V rank"
 save_plotly_figure(fig, title)
 
 
-# In[32]:
-
+# In[128]:
 
 
 fig = px.scatter_matrix(all_metrics_flat,
                         dimensions=["Values-Location-Mean-x", "Values-Location-Mean-y",
                                     "Values-Location-SD-x", "Values-Location-SD-y"],
-                        color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark",)
+                        color="Labels-Value", color_discrete_map=color_discrete_map,
+                        category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_traces(marker=dict(size=2, opacity=0.8))
 fig.show()
 title = "Location scatter matrix"
 save_plotly_figure(fig,title)
 
 
-# In[33]:
+# In[131]:
+
+
+
+
+
+# In[134]:
 
 
 fig = px.histogram(all_metrics_flat, x="Values-Location-Mean-x", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                   color="Labels-Value", color_discrete_map=color_discrete_map,
+                   category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
@@ -335,7 +463,8 @@ save_plotly_figure(fig, title)
 
 fig = px.histogram(all_metrics_flat, x="Values-Location-Mean-y", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                   color="Labels-Value", color_discrete_map=color_discrete_map,
+                   category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
@@ -344,7 +473,8 @@ save_plotly_figure(fig, title)
 
 fig = px.histogram(all_metrics_flat, x="Values-Location-SD-x", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
-                   color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
+                   color="Labels-Value", color_discrete_map=color_discrete_map,
+                   category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
@@ -364,5 +494,5 @@ save_plotly_figure(fig, title)
 # In[124]:
 
 
-all_metrics.agg(["median","max"])
+
 
