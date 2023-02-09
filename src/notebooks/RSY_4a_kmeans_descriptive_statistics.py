@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[6]:
+# In[2]:
 
 
 import os
@@ -50,7 +50,7 @@ all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spat
 
 # ## Load data from excel
 
-# In[5]:
+# In[3]:
 
 
 kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx", dtype={
@@ -65,7 +65,7 @@ kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correc
 
 # ## Calculate metrics
 
-# In[7]:
+# In[5]:
 
 
 all_metrics = []
@@ -80,7 +80,7 @@ for ind, filename in enumerate(kmeans_labels["Filename"]):
 all_metrics = pd.concat(all_metrics, keys=kmeans_labels["Filename"])
 
 
-# In[15]:
+# In[6]:
 
 
 all_metrics.loc[:, ("Labels","Value","","")] = "False"
@@ -109,7 +109,7 @@ all_metrics.index.names = [all_metrics.index.names[0], "Mask"]
 
 # ## Create aggregate version of metrics df
 
-# In[16]:
+# In[8]:
 
 
 all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["median"])[["Ranks","Values"]]
@@ -120,7 +120,7 @@ all_metrics_agg.to_excel("outputs/kmeans-descriptive/aggregate.xlsx")
 
 # ## Create flat version of metrics df
 
-# In[116]:
+# In[9]:
 
 
 all_metrics_flat = all_metrics.copy()
@@ -156,9 +156,20 @@ for col in current_columns:
             # integers
             all_metrics_flat[col_prefix + "-xy"] =                 all_metrics_flat[col_prefix+"-x"].map("{:.1%}, ".format) +                 all_metrics_flat[col_prefix+"-y"].map("{:.1%}".format)
 
+for ind in range(1,10+1):
+    all_metrics_flat[f"Ranks-Color-Center-H>={ind}"] = all_metrics_flat["Ranks-Color-Center-H"] >=ind
+for ind in range(1,10+1):
+    all_metrics_flat[f"Ranks-Color-Center-S>={ind}"] = all_metrics_flat["Ranks-Color-Center-S"] >=ind
+for ind in range(1,10+1):
+    all_metrics_flat[f"Ranks-Color-Center-V>={ind}"] = all_metrics_flat["Ranks-Color-Center-V"] >=ind
 
-all_metrics_flat["Ranks-Color-Center-V>4"] = all_metrics_flat["Ranks-Color-Center-V"] >4
-all_metrics_flat["Ranks-Color-Center-V>5"] = all_metrics_flat["Ranks-Color-Center-V"] >5
+for val_cutoff in [100]:
+    all_metrics_flat[f"Values-Color-Center-H>={val_cutoff}"] = all_metrics_flat["Values-Color-Center-H"] >=val_cutoff
+for val_cutoff in range(135,175+1,5):
+    all_metrics_flat[f"Values-Color-Center-S>={val_cutoff}"] = all_metrics_flat["Values-Color-Center-S"] >=val_cutoff
+for val_cutoff in range( 75,150+1,5):
+    all_metrics_flat[f"Values-Color-Center-V>={val_cutoff}"] = all_metrics_flat["Values-Color-Center-V"] >=val_cutoff
+
 
 # Get Hue in terms of 360 degrees
 K=10
@@ -169,7 +180,7 @@ all_metrics_flat["Values-Color-Center-H360"] = all_metrics_flat["Values-Color-Ce
 
 # ## Save values so they don't have to be rerun every time
 
-# In[136]:
+# In[10]:
 
 
 all_metrics.to_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
@@ -403,6 +414,7 @@ fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", o
                     category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
+fig.show()
 title = "HSV histogram with box plot- H rank"
 save_plotly_figure(fig, title)
 
@@ -413,6 +425,7 @@ fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-S", marginal="box", o
                     category_orders=category_orders, labels=var_labels, template=plotly_template)
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
+fig.show()
 title = "HSV histogram with box plot- S rank"
 save_plotly_figure(fig, title)
 

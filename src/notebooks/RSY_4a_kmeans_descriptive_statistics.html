@@ -14588,7 +14588,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -14705,7 +14705,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">kmeans_labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s2">&quot;data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span>
@@ -14739,7 +14739,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_metrics</span> <span class="o">=</span> <span class="p">[]</span>
@@ -14764,7 +14764,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">(</span><span class="s2">&quot;Labels&quot;</span><span class="p">,</span><span class="s2">&quot;Value&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;False&quot;</span>
@@ -14812,7 +14812,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[16]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_metrics_agg</span> <span class="o">=</span> <span class="n">all_metrics</span><span class="o">.</span><span class="n">groupby</span><span class="p">([(</span><span class="s2">&quot;Labels&quot;</span><span class="p">,</span><span class="s2">&quot;Value&quot;</span><span class="p">)])</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;median&quot;</span><span class="p">])[[</span><span class="s2">&quot;Ranks&quot;</span><span class="p">,</span><span class="s2">&quot;Values&quot;</span><span class="p">]]</span>
@@ -14868,7 +14868,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[116]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_metrics_flat</span> <span class="o">=</span> <span class="n">all_metrics</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -14906,9 +14906,20 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
                 <span class="n">all_metrics_flat</span><span class="p">[</span><span class="n">col_prefix</span><span class="o">+</span><span class="s2">&quot;-x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.1%}</span><span class="s2">, &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> <span class="o">+</span> \
                 <span class="n">all_metrics_flat</span><span class="p">[</span><span class="n">col_prefix</span><span class="o">+</span><span class="s2">&quot;-y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.1%}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
 
+<span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">all_metrics_flat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Ranks-Color-Center-H&gt;=</span><span class="si">{</span><span class="n">ind</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Ranks-Color-Center-H&quot;</span><span class="p">]</span> <span class="o">&gt;=</span><span class="n">ind</span>
+<span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">all_metrics_flat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Ranks-Color-Center-S&gt;=</span><span class="si">{</span><span class="n">ind</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Ranks-Color-Center-S&quot;</span><span class="p">]</span> <span class="o">&gt;=</span><span class="n">ind</span>
+<span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">all_metrics_flat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Ranks-Color-Center-V&gt;=</span><span class="si">{</span><span class="n">ind</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Ranks-Color-Center-V&quot;</span><span class="p">]</span> <span class="o">&gt;=</span><span class="n">ind</span>
 
-<span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Ranks-Color-Center-V&gt;4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Ranks-Color-Center-V&quot;</span><span class="p">]</span> <span class="o">&gt;</span><span class="mi">4</span>
-<span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Ranks-Color-Center-V&gt;5&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Ranks-Color-Center-V&quot;</span><span class="p">]</span> <span class="o">&gt;</span><span class="mi">5</span>
+<span class="k">for</span> <span class="n">val_cutoff</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">]:</span>
+    <span class="n">all_metrics_flat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Values-Color-Center-H&gt;=</span><span class="si">{</span><span class="n">val_cutoff</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Values-Color-Center-H&quot;</span><span class="p">]</span> <span class="o">&gt;=</span><span class="n">val_cutoff</span>
+<span class="k">for</span> <span class="n">val_cutoff</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">135</span><span class="p">,</span><span class="mi">175</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">all_metrics_flat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Values-Color-Center-S&gt;=</span><span class="si">{</span><span class="n">val_cutoff</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Values-Color-Center-S&quot;</span><span class="p">]</span> <span class="o">&gt;=</span><span class="n">val_cutoff</span>
+<span class="k">for</span> <span class="n">val_cutoff</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="mi">75</span><span class="p">,</span><span class="mi">150</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">all_metrics_flat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Values-Color-Center-V&gt;=</span><span class="si">{</span><span class="n">val_cutoff</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_metrics_flat</span><span class="p">[</span><span class="s2">&quot;Values-Color-Center-V&quot;</span><span class="p">]</span> <span class="o">&gt;=</span><span class="n">val_cutoff</span>
+
 
 <span class="c1"># Get Hue in terms of 360 degrees</span>
 <span class="n">K</span><span class="o">=</span><span class="mi">10</span>
@@ -14940,7 +14951,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[136]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_metrics</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="s2">&quot;data/03_first_25percent_metrics/color_and_spatial_metrics&quot;</span> <span class="o">+</span> <span class="s2">&quot;.pkl&quot;</span><span class="p">)</span>
@@ -15739,6 +15750,7 @@ if (outputEl) {{
                     <span class="n">category_orders</span><span class="o">=</span><span class="n">category_orders</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">var_labels</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">plotly_template</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">bargap</span><span class="o">=</span><span class="mf">0.04</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">,),</span> <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;HSV histogram with box plot- H rank&quot;</span>
 <span class="n">save_plotly_figure</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
 
@@ -15749,6 +15761,7 @@ if (outputEl) {{
                     <span class="n">category_orders</span><span class="o">=</span><span class="n">category_orders</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">var_labels</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">plotly_template</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">bargap</span><span class="o">=</span><span class="mf">0.04</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">font</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s2">&quot;Arial&quot;</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">,),</span> <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;HSV histogram with box plot- S rank&quot;</span>
 <span class="n">save_plotly_figure</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
 
