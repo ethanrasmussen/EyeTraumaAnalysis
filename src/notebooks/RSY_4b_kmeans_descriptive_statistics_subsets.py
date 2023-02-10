@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[143]:
+# In[1]:
 
 
 import os
@@ -10,33 +10,36 @@ import importlib
 import json
 import numpy as np
 import pandas as pd
+import scipy
 import scipy.ndimage as snd
 import skimage
 import uuid
+from matplotlib import pyplot as plt
+import matplotlib as mpl
+import cv2
+import plotly
+import plotly.express as px
+import plotly.graph_objects as go
 
-if os.getcwd().split("/")[-1] == "notebooks":
-    os.chdir("../..")
+
+if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
+    os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
 
 import EyeTraumaAnalysis
 
-print(directory_path)
-importlib.reload(EyeTraumaAnalysis);
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-import matplotlib as mpl
-import cv2
 
-import plotly.express as px
-import plotly
+# In[ ]:
+
+
+importlib.reload(EyeTraumaAnalysis);
 
 
 # # Load metrics
 
-# In[144]:
+# In[2]:
 
 
 all_metrics = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
@@ -44,94 +47,18 @@ all_metrics_flat = pd.read_pickle("data/03_first_25percent_metrics/color_and_spa
 all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
 
 
-# # Create function for calculating roc metrics
-
-# In[183]:
-
-
-
-
-
-# In[221]:
-
-
-def calculate_roc(truths, predict_scores, true_value=None):
-    if true_value is None:
-        truths = np.array(truths, dtype=bool)
-    elif isinstance(true_value,(list,dict,tuple,set,pd.Series,pd.DataFrame,np.ndarray)):
-        truths = np.array(truths) #== true_value  # check if values equal the whole collection
-        truths_temp = np.zeros(truths.shape, dtype=bool)  # start with false and then apply the | (or) operator
-        for each_true_value in true_value:  # check if values equal any of the elements in the collection
-            truths_temp = truths_temp | (truths == each_true_value)
-        truths = truths_temp
-    else:
-        truths = np.array(truths) == true_value
-    predict_scores = np.array(predict_scores)
-    predict_scores_sorted = np.sort(np.unique(predict_scores))
-    #thresholds = np.concatenate( ([np.min(predict_scores)-0.01], predict_scores) )
-    thresholds = np.concatenate( (
-        [predict_scores_sorted[0]-0.01],
-        (predict_scores_sorted[1:]+predict_scores_sorted[:-1])/2,
-        [predict_scores_sorted[-1]+0.01]
-    ))
-    predictions = predict_scores >= thresholds[...,np.newaxis]
-    # predictions has one more dimension than predict_scores
-    true_pos  =  truths &  predictions
-    false_pos = ~truths &  predictions
-    false_neg =  truths & ~predictions
-    true_neg  = ~truths & ~predictions
-
-    true_pos_ct  = np.count_nonzero(true_pos,  axis=-1)
-    false_pos_ct = np.count_nonzero(false_pos, axis=-1)
-    false_neg_ct = np.count_nonzero(false_neg, axis=-1)
-    true_neg_ct  = np.count_nonzero(true_neg,  axis=-1)
-
-    # Below is a good paper to review the formulas
-    # https://www.frontiersin.org/articles/10.3389/fpubh.2017.00307/full
-    accuracy = true_pos_ct + true_neg_ct / ( true_pos_ct + false_pos_ct + false_neg_ct + true_neg_ct )
-    # Sensitivity aka Recall aka True positive rate (TPR)
-    sensitivity = tpr = true_pos_ct / ( true_pos_ct + false_neg_ct )
-    # Specificity aka True negative rate (TNR)
-    specificity = tnr = true_neg_ct / ( true_neg_ct + false_pos_ct )
-    # Positive predictive value (PPV) aka Precision
-    ppv = true_pos_ct / ( true_pos_ct + false_pos_ct )
-    # Negative predictive value (NPV)
-    npv = true_neg_ct / ( true_neg_ct + false_neg_ct )
-    # False discovery rate (FDR)
-    fdr = 1 - ppv
-    # False omission rate (FOR, called FOMR in code)
-    fomr = 1 - npv
-    # False negative rate (FNR)
-    fnr = 1 - tpr
-    # False positive rate (FPR) aka 1-specificity
-    fpr = 1 - tnr
-
-    return pd.DataFrame({
-        "threshold": thresholds,
-        "sensitivity": sensitivity,
-        "specificity": specificity,
-        "1-specificity": fpr,
-    })
-
-
-# In[197]:
-
-
-np.equal( np.array([0,0,1,1,1]), [1])
-
-
 # # Prepare for plotting
 
-# In[145]:
+# In[4]:
 
 
-def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str):
-    fig.write_image("outputs/kmeans-descriptive-subsets/" + title + ".png")
-    fig.write_html( "outputs/kmeans-descriptive-subsets/" + title + ".html",
-                        full_html=True, include_plotlyjs="directory" )
+def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive-subsets/"):
+    fig.write_image(os.path.join(directory, title + ".png"))
+    fig.write_html( os.path.join(directory, title + ".html"),
+                    full_html=True, include_plotlyjs="directory" )
 
 
-# In[166]:
+# In[5]:
 
 
 color_discrete_map = {
@@ -305,7 +232,7 @@ title = "HSV histogram with box plot- H val split at V rank>=6"
 save_plotly_figure(fig, title)
 
 
-# In[44]:
+# In[6]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -319,127 +246,4 @@ fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=
 fig.show()
 title = "HSV histogram- H val split at V >=75 and S >=75"
 save_plotly_figure(fig, title)
-
-
-# In[208]:
-
-
-roc_df = calculate_roc(all_metrics_flat["Labels-Value"],
-                       all_metrics_flat["Values-Color-Center-V"], true_value="True")
-fig = px.area(roc_df,
-              x="1-specificity", y="sensitivity",
-              hover_data=roc_hover_data,
-                 category_orders=category_orders, labels=var_labels, template=plotly_template,
-)
-fig.add_shape( type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1 )
-fig.show()
-title = "HSV ROC curve - V value"
-save_plotly_figure(fig, title)
-
-
-# In[222]:
-
-
-roc_df = calculate_roc(all_metrics_flat["Labels-Value"],
-                       all_metrics_flat["Ranks-Color-Center-V"], true_value="True")
-fig = px.area(roc_df,
-              x="1-specificity", y="sensitivity",
-              hover_data=roc_hover_data, text="threshold",
-                 category_orders=category_orders, labels=var_labels, template=plotly_template,
-)
-fig.add_shape( type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1 )
-fig.show()
-title = "HSV ROC curve - V rank"
-save_plotly_figure(fig, title)
-
-
-# In[224]:
-
-
-roc_df = calculate_roc(all_metrics_flat["Labels-Value"],
-                       all_metrics_flat["Ranks-Color-Center-H"], true_value="True")
-roc_df.sort_values(by="1-specificity")
-fig = px.line(roc_df,
-              x="1-specificity", y="sensitivity",
-              hover_data=roc_hover_data, text="threshold", markers=True,
-              range_y=[0,1], range_x=[0,1],
-                 category_orders=category_orders, labels=var_labels, template=plotly_template,
-)
-fig.add_shape( type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1 )
-fig.show()
-title = "HSV ROC curve - H rank"
-save_plotly_figure(fig, title)
-
-roc_df = calculate_roc(all_metrics_flat["Labels-Value"],
-                       all_metrics_flat["Ranks-Color-Center-S"], true_value="True")
-roc_df.sort_values(by="1-specificity")
-fig = px.line(roc_df,
-              x="1-specificity", y="sensitivity",
-              hover_data=roc_hover_data, text="threshold", markers=True,
-              range_y=[0,1], range_x=[0,1],
-                 category_orders=category_orders, labels=var_labels, template=plotly_template,
-)
-fig.add_shape( type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1 )
-fig.show()
-title = "HSV ROC curve - S rank"
-save_plotly_figure(fig, title)
-
-roc_df = calculate_roc(all_metrics_flat["Labels-Value"],
-                       all_metrics_flat["Ranks-Color-Center-V"], true_value="True")
-roc_df.sort_values(by="1-specificity")
-fig = px.line(roc_df,
-              x="1-specificity", y="sensitivity",
-              hover_data=roc_hover_data, text="threshold", markers=True,
-              range_y=[0,1], range_x=[0,1],
-                 category_orders=category_orders, labels=var_labels, template=plotly_template,
-)
-fig.add_shape( type="line", line=dict(dash="dash"), x0=0, x1=1, y0=0, y1=1 )
-fig.show()
-title = "HSV ROC curve - V rank"
-save_plotly_figure(fig, title)
-
-
-# In[59]:
-
-
-np.concatenate([[1],[2]])
-
-
-# In[123]:
-
-
-a = np.array([0,5,10])
-b = np.array([6,5,4,3])
-c = a >= b[...,np.newaxis]
-c
-
-
-# In[104]:
-
-
-(~np.array([True,False,True,False]) & c)
-
-
-# In[141]:
-
-
-np.array(pd.Series([1,2,3,"False"]),dtype=bool)
-
-
-# In[136]:
-
-
-
-
-
-# In[190]:
-
-
-calculate_roc([0,0,1,1,1],[0.1,0.2,0.3,0.4,0.5],true_value=["a"])
-
-
-# In[ ]:
-
-
-
 

@@ -95,3 +95,100 @@ def choose_kmeans_cluster(metrics):
     if likely.shape[0] > 2:
         likely = likely.sort_values(by=("Values","Location","SD","x y"))[:2]
     return likely
+
+
+
+def calculate_roc(truths, predict_scores, true_value=None, comparator=None):
+    if true_value is None:
+        truths = np.array(truths, dtype=bool)
+    elif isinstance(true_value,(list,dict,tuple,set,pd.Series,pd.DataFrame,np.ndarray)):
+        truths = np.array(truths) #== true_value  # check if values equal the whole collection
+        truths_temp = np.zeros(truths.shape, dtype=bool)  # start with false and then apply the | (or) operator
+        for each_true_value in true_value:  # check if values equal any of the elements in the collection
+            truths_temp = truths_temp | (truths == each_true_value)
+        truths = truths_temp
+    else:
+        truths = np.array(truths) == true_value
+
+    if np.all(truths) or ~np.any(truths):
+        raise ValueError("All truth values are " + truths[0])
+
+    predict_scores = np.array(predict_scores)
+    score_options = np.sort(np.unique(predict_scores))
+    #thresholds = np.concatenate( ([np.min(predict_scores)-0.01], predict_scores) )
+    thresholds = np.concatenate( (
+        [score_options[0]-0.01],
+        np.mean([score_options[1:],score_options[:-1]],axis=0), # do np.mean instead of (+)/2 to avoid issues with
+        # uint8 data loss after you get values past 255
+        [score_options[-1]+0.01]
+    ))
+    comparator_original = comparator
+    if comparator is None:
+        # Guess a comparator based off mean values. This is not a sure fire approach and is checked at the end of the
+        # function by the AUC.
+        scores_of_trues  = np.mean(predict_scores, where=truths)
+        scores_of_falses = np.mean(predict_scores, where=~truths)
+        if scores_of_trues >= scores_of_falses:
+            comparator = "≥"
+        else:
+            comparator = "≤"
+
+    if comparator in [">=","≥"]:
+        predictions = predict_scores >= thresholds[...,np.newaxis]
+        comparator_opposite = "≤"
+    elif comparator in ["<=","≤"]:
+        predictions = predict_scores <= thresholds[...,np.newaxis]
+        comparator_opposite = "≥"
+    elif comparator in [">"]:
+        predictions = predict_scores > thresholds[...,np.newaxis]
+        comparator_opposite = "<"
+    elif comparator in ["<"]:
+        predictions = predict_scores < thresholds[...,np.newaxis]
+        comparator_opposite = ">"
+    else:
+        raise ValueError(f'Comparator "{comparator}" is not one of the valid options: [">=","<=",">","<"]')
+
+    # predictions has one more dimension than predict_scores
+    true_pos  =  truths &  predictions
+    false_pos = ~truths &  predictions
+    false_neg =  truths & ~predictions
+    true_neg  = ~truths & ~predictions
+
+    true_pos_ct  = np.count_nonzero(true_pos,  axis=-1)
+    false_pos_ct = np.count_nonzero(false_pos, axis=-1)
+    false_neg_ct = np.count_nonzero(false_neg, axis=-1)
+    true_neg_ct  = np.count_nonzero(true_neg,  axis=-1)
+
+    with np.errstate(invalid="ignore"):
+        # Below is a good paper to review the formulas
+        # https://www.frontiersin.org/articles/10.3389/fpubh.2017.00307/full
+        accuracy = true_pos_ct + true_neg_ct / ( true_pos_ct + false_pos_ct + false_neg_ct + true_neg_ct )
+        # Sensitivity aka Recall aka True positive rate (TPR)
+        sensitivity = tpr = true_pos_ct / ( true_pos_ct + false_neg_ct )
+        # Specificity aka True negative rate (TNR)
+        specificity = tnr = true_neg_ct / ( true_neg_ct + false_pos_ct )
+        # Positive predictive value (PPV) aka Precision
+        ppv = true_pos_ct / ( true_pos_ct + false_pos_ct )
+        # Negative predictive value (NPV)
+        npv = true_neg_ct / ( true_neg_ct + false_neg_ct )
+        # False discovery rate (FDR)
+        fdr = 1 - ppv
+        # False omission rate (FOR, called FOMR in code)
+        fomr = 1 - npv
+        # False negative rate (FNR)
+        fnr = 1 - tpr
+        # False positive rate (FPR) aka 1-specificity
+        fpr = 1 - tnr
+
+        roc_df = pd.DataFrame({
+            "threshold": thresholds,
+            "sensitivity": sensitivity,
+            "1-specificity": fpr,
+            "specificity": specificity,
+        }).sort_values(by="specificity", ascending=False)
+        auc = np.trapz(y=roc_df["sensitivity"],x=1-roc_df["specificity"])
+    if comparator_original is None and auc <0.5:
+        # if no specific comparator was put in and auc<0.5, then switch the comparator to get an auc≥0.5
+        return calculate_roc(truths, predict_scores, true_value=None, comparator=comparator_opposite)
+    else:
+        return roc_df, auc, comparator

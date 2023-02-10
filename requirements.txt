@@ -18,6 +18,7 @@ plotly==5.7.0
 imutils==0.5.4
 opencv-python==4.6.0.66
 openpyxl==3.0.10  # pandas optional dependency
+ipython>=8.4.0
 
 labelbox[data]
 scikit-image

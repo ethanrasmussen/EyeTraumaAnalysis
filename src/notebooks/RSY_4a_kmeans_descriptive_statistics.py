@@ -194,13 +194,19 @@ all_metrics_agg.to_excel("data/03_first_25percent_metrics/color_and_spatial_metr
 
 # # Prepare for plotting
 
+# In[ ]:
+
+
+
+
+
 # In[139]:
 
 
-def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str):
-    fig.write_image("outputs/kmeans-descriptive/" + title + ".png")
-    fig.write_html( "outputs/kmeans-descriptive/" + title + ".html",
-                        full_html=True, include_plotlyjs="directory" )
+def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive/"):
+    fig.write_image(os.path.join(directory, title + ".png"))
+    fig.write_html( os.path.join(directory, title + ".html"),
+                    full_html=True, include_plotlyjs="directory" )
 
 
 # In[104]:
