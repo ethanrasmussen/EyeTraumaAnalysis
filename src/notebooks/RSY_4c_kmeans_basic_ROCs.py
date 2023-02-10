@@ -365,7 +365,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[317]:
+# In[319]:
 
 
 title = "HSV ROC Curve - HSV centers (rank)"
@@ -386,11 +386,31 @@ for ind, predictor_name in enumerate(predictor_names):
     fig.add_trace(go.Scatter(
         x=roc_df["specificity"], y=roc_df["sensitivity"],
         mode="lines+markers+text", opacity=0.75,
-        text=roc_df["threshold"].apply(
-            (comparator+"{:}").format), textposition=textpositions[ind],
+        #text=roc_df["threshold"].apply( (comparator+"{:}").format), textposition=textpositions[ind],
         name=f"{var_labels[predictor_name]}, AUC: {auc:0.3f}",
         marker=dict(color=color),
     ))
+    fig.add_annotation(
+        x=roc_df["specificity"][max_youden_loc], y=roc_df["sensitivity"][max_youden_loc],
+        text=f"At {comparator}{roc_df['threshold'][max_youden_loc]}",
+        showarrow=True,
+        font=dict(color=color),
+        #arrowcolor=color,
+        bgcolor="#FFF", bordercolor="#000",
+        opacity=0.8,
+        arrowwidth=2,
+        arrowhead=2)
+    max_youden_loc = 1
+    fig.add_annotation(
+        x=roc_df["specificity"][max_youden_loc], y=roc_df["sensitivity"][max_youden_loc],
+        text=f"At {comparator}{roc_df['threshold'][max_youden_loc]}",
+        showarrow=True,
+        font=dict(color=color),
+        #arrowcolor=color,
+        bgcolor="#FFF", bordercolor="#000",
+        opacity=0.8,
+        arrowwidth=2,
+        arrowhead=2)
 
 customize_roc_curve(fig)
 fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
@@ -405,7 +425,7 @@ save_plotly_figure(fig, title)
 
 
 
-# In[283]:
+# In[322]:
 
 
 import plotly.graph_objects as go
@@ -439,9 +459,11 @@ for ind, predictor_name in enumerate(predictor_names):
         showarrow=True,
         font=dict(color=color),
         opacity=0.8,
-        bgcolor="#FFF",
+        bgcolor="#FFF", bordercolor="#000",
         arrowwidth=2,
         arrowhead=1)
+
+
 customize_roc_curve(fig)
 fig.show()
 save_plotly_figure(fig, title)
