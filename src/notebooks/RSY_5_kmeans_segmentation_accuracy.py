@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import os
@@ -31,7 +31,7 @@ import matplotlib as mpl
 import cv2
 
 
-# In[2]:
+# In[3]:
 
 
 kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx", dtype={
@@ -44,7 +44,7 @@ kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correc
 }, na_filter=False) # False na_filters make empty value for str column be "" instead of NaN
 
 
-# In[3]:
+# In[4]:
 
 
 all_metrics = []
@@ -65,7 +65,7 @@ all_metrics = pd.concat(all_metrics, keys=kmeans_labels["Filename"])
 all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["median"])[["Ranks","Values"]]
 
 
-# In[ ]:
+# In[7]:
 
 
 # Test model
@@ -85,7 +85,7 @@ segmentations_preds = {}
 clusters_preds = {}
 
 
-# In[ ]:
+# In[8]:
 
 
 for ind, filename in enumerate(kmeans_labels["Filename"]):
@@ -99,7 +99,7 @@ for ind, filename in enumerate(kmeans_labels["Filename"]):
     clusters_preds[filename] = np.array(chosen.index)
 
 
-# In[60]:
+# In[9]:
 
 
 def calculate_prediction_statistics_areas(segmentations_trues, segmentations_preds):
@@ -143,15 +143,38 @@ def calculate_prediction_statistics_clusters(clusters_true, clusters_pred, total
         clusters_pred = clusters_preds[filename]
 
         #intersection_clusters = true_positive_clusters = len([cluster for cluster in clusters_true if cluster in clusters_pred])
-        intersection_clusters = true_positive_clusters = len([cluster for cluster in range(total_clusters)
-                                                              if cluster in clusters_true and cluster in clusters_pred])
-        false_positive_clusters = len([cluster for cluster in range(total_clusters)
-                                       if cluster not in clusters_true and cluster in clusters_pred])
-        false_negative_clusters = len([cluster for cluster in range(total_clusters)
-                                       if cluster in clusters_true and cluster not in clusters_pred])
-        true_negative_clusters = len([cluster for cluster in range(total_clusters)
-                                      if cluster not in clusters_true and cluster not in clusters_pred])
-        union_clusters = true_positive_clusters + false_positive_clusters + false_negative_clusters
+        intersection_clusters = true_pos_clusters = [cluster for cluster in range(total_clusters)
+                                                              if cluster in clusters_true and cluster in clusters_pred]
+        false_pos_clusters = [cluster for cluster in range(total_clusters)
+                                       if cluster not in clusters_true and cluster in clusters_pred]
+        false_neg_clusters = [cluster for cluster in range(total_clusters)
+                                       if cluster in clusters_true and cluster not in clusters_pred]
+        true_neg_clusters = [cluster for cluster in range(total_clusters)
+                                      if cluster not in clusters_true and cluster not in clusters_pred]
+        union_clusters = true_pos_clusters + false_pos_clusters + false_neg_clusters
+
+        true_pos_ct = len(true_pos_clusters)
+        true_neg_ct = len(true_neg_clusters)
+        false_neg_ct = len(false_neg_clusters)
+        false_pos_ct = len(false_pos_clusters)
+
+        accuracy = true_pos_ct + true_neg_ct / ( true_pos_ct + false_pos_ct + false_neg_ct + true_neg_ct )
+        # Sensitivity aka Recall aka True positive rate (TPR)
+        sensitivity = tpr = true_pos_ct / ( true_pos_ct + false_neg_ct )
+        # Specificity aka True negative rate (TNR)
+        specificity = tnr = true_neg_ct / ( true_neg_ct + false_pos_ct )
+        # Positive predictive value (PPV) aka Precision
+        ppv = true_pos_ct / ( true_pos_ct + false_pos_ct )
+        # Negative predictive value (NPV)
+        npv = true_neg_ct / ( true_neg_ct + false_neg_ct )
+        # False discovery rate (FDR)
+        fdr = 1 - ppv
+        # False omission rate (FOR, called FOMR in code)
+        fomr = 1 - npv
+        # False negative rate (FNR)
+        fnr = 1 - tpr
+        # False positive rate (FPR) aka 1-specificity
+        fpr = 1 - tnr
 
         # https://towardsdatascience.com/how-accurate-is-image-segmentation-dd448f896388
         # Jaccard's index: Intersection over union
@@ -177,7 +200,7 @@ def calculate_prediction_statistics_clusters(clusters_true, clusters_pred, total
     return prediction_statistics
 
 
-# In[61]:
+# In[10]:
 
 
 prediction_statistic_area = calculate_prediction_statistics_areas(segmentations_trues, segmentations_preds)
@@ -187,7 +210,7 @@ prediction_statistic_clusters = calculate_prediction_statistics_clusters(cluster
 # .values()]
 
 
-# In[82]:
+# In[11]:
 
 
 prediction_statistic_clusters["jaccard_raw"].value_counts(sort=True, normalize=False)
@@ -197,10 +220,4 @@ prediction_statistic_clusters["jaccard_raw"].value_counts(sort=True, normalize=F
 
 
 prediction_statistic_clusters["jaccard"].agg(["mean","median","std","min","max"])
-
-
-# In[ ]:
-
-
-
 

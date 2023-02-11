@@ -15779,7 +15779,183 @@ if (outputEl) {{
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[271]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[353]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">roc_df</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">],</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[353]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>10    10.01
+9      9.50
+8      8.50
+7      7.50
+6      6.50
+5      5.50
+4      4.50
+3      3.50
+2      2.50
+1      1.50
+0      0.99
+Name: threshold, dtype: float64</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[352]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">formula</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span>
+<span class="n">formula</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">formula</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mf">2.0</span><span class="p">),</span> <span class="n">formula</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mf">3.1</span><span class="p">),</span> <span class="n">formula</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mf">3.14159265358</span><span class="p">),</span> <span class="n">formula</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mf">10.1</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[352]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>(&#39;1&#39;, &#39;2.0&#39;, &#39;3.1&#39;, &#39;3.14159265358&#39;, &#39;10.1&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[365]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">roc_df</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">],</span><span class="mi">2</span><span class="p">),</span> <span class="n">roc_df</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[365]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>(1, 11, 2)</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[374]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">var_labels</span><span class="p">[</span><span class="s2">&quot;Ranks-Location-SD-y&quot;</span><span class="p">]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[374]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>&#39;SD y (Rank)&#39;</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[379]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Loc ROC Curve - xy (rank)&quot;</span>
@@ -15803,7 +15979,13 @@ if (outputEl) {{
         <span class="c1">#text=roc_df[&quot;threshold&quot;].apply((comparator+&quot;{:}&quot;).format), textposition=&quot;bottom right&quot;,</span>
         <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var_labels</span><span class="p">[</span><span class="n">predictor_name</span><span class="p">]</span><span class="si">}</span><span class="s2">, AUC: </span><span class="si">{</span><span class="n">auc</span><span class="si">:</span><span class="s2">0.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="n">marker</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">),</span>
+        <span class="n">customdata</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">roc_df</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">],</span><span class="mi">2</span><span class="p">),</span><span class="n">roc_df</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">]),</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">hovertemplate</span> <span class="o">=</span>
+        <span class="s2">&quot;&lt;b&gt;Specificity&lt;/b&gt;: %</span><span class="si">{x:.2%}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;&lt;br&gt;&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot;&lt;b&gt;Sensitivity&lt;/b&gt;: %</span><span class="si">{y:.2%}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;&lt;br&gt;&quot;</span> <span class="o">+</span>
+        <span class="s2">&quot;&lt;b&gt;Threshold&lt;/b&gt;: &quot;</span> <span class="o">+</span> <span class="n">comparator</span> <span class="o">+</span> <span class="s2">&quot;%</span><span class="si">{customdata[0]}</span><span class="s2">&quot;</span>
     <span class="p">))</span>
+
 
     <span class="n">fig</span><span class="o">.</span><span class="n">add_annotation</span><span class="p">(</span>
         <span class="n">x</span><span class="o">=</span><span class="n">roc_df</span><span class="p">[</span><span class="s2">&quot;specificity&quot;</span><span class="p">][</span><span class="n">max_youden_loc</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="n">roc_df</span><span class="p">[</span><span class="s2">&quot;sensitivity&quot;</span><span class="p">][</span><span class="n">max_youden_loc</span><span class="p">],</span>
@@ -15816,11 +15998,11 @@ if (outputEl) {{
         <span class="n">arrowwidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">arrowhead</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="n">customize_roc_curve</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+<span class="n">customize_roc_curve</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">add_reference_line</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">uniformtext_minsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">uniformtext_mode</span><span class="o">=</span><span class="s1">&#39;hide&#39;</span><span class="p">)</span>
 
 <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">save_plotly_figure</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+<span class="c1">#save_plotly_figure(fig, title)</span>
 </pre></div>
 
      </div>
@@ -15843,9 +16025,9 @@ if (outputEl) {{
 
 
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
-<div>                            <div id="deeb6cd7-e6df-4a3f-a90b-6434bc4788a7" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("deeb6cd7-e6df-4a3f-a90b-6434bc4788a7")) {                    Plotly.newPlot(                        "deeb6cd7-e6df-4a3f-a90b-6434bc4788a7",                        [{"marker":{"color":"rgb(136, 204, 238)"},"mode":"lines+markers+text","name":"Mean x (Rank), AUC: 0.503","opacity":0.75,"x":[1.0,0.8964110929853181,0.8034257748776509,0.7039151712887439,0.5978792822185971,0.49836867862969003,0.39804241435562804,0.29608482871125613,0.2039151712887439,0.1068515497553018,0.0],"y":[0.0,0.08035714285714286,0.21875,0.32142857142857145,0.38839285714285715,0.49107142857142855,0.5892857142857143,0.6785714285714286,0.8214285714285714,0.9375,1.0],"type":"scatter"},{"marker":{"color":"rgb(204, 102, 119)"},"mode":"lines+markers+text","name":"Mean y (Rank), AUC: 0.709","opacity":0.75,"x":[1.0,0.9021207177814029,0.8205546492659054,0.7446982055464927,0.6525285481239804,0.5546492659053833,0.4551386623164764,0.34176182707993474,0.23246329526916804,0.11827079934747145,0.0],"y":[0.0,0.11160714285714286,0.3125,0.5446428571428571,0.6875,0.7991071428571429,0.9017857142857143,0.9285714285714286,0.9776785714285714,1.0,1.0],"type":"scatter"},{"marker":{"color":"rgb(221, 204, 119)"},"mode":"lines+markers+text","name":"SD x (Rank), AUC: 0.604","opacity":0.75,"x":[1.0,0.8907014681892332,0.7887438825448614,0.7055464926590538,0.6166394779771615,0.5301794453507341,0.4363784665579119,0.3401305057096248,0.23409461663947798,0.11827079934747145,0.0],"y":[0.0,0.049107142857142856,0.13839285714285715,0.33035714285714285,0.49107142857142855,0.6651785714285714,0.7991071428571429,0.9196428571428571,0.9866071428571429,1.0,1.0],"type":"scatter"},{"marker":{"color":"rgb(17, 119, 51)"},"mode":"lines+markers+text","name":"SD y (Rank), AUC: 0.627","opacity":0.75,"x":[1.0,0.8988580750407831,0.8001631321370309,0.7161500815660685,0.6288743882544862,0.534257748776509,0.43800978792822187,0.33442088091353994,0.2275693311582382,0.11745513866231648,0.0],"y":[0.0,0.09375,0.20089285714285715,0.38839285714285715,0.5580357142857143,0.6875,0.8080357142857143,0.8883928571428571,0.9508928571428571,0.9955357142857143,1.0],"type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"rgb(36,36,36)"},"error_y":{"color":"rgb(36,36,36)"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"rgb(36,36,36)","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"rgb(36,36,36)"},"baxis":{"endlinecolor":"rgb(36,36,36)","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"rgb(36,36,36)"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"histogram2d"}],"histogram":[{"marker":{"line":{"color":"white","width":0.6}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"rgb(237,237,237)"},"line":{"color":"white"}},"header":{"fill":{"color":"rgb(217,217,217)"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"colorscale":{"diverging":[[0.0,"rgb(103,0,31)"],[0.1,"rgb(178,24,43)"],[0.2,"rgb(214,96,77)"],[0.3,"rgb(244,165,130)"],[0.4,"rgb(253,219,199)"],[0.5,"rgb(247,247,247)"],[0.6,"rgb(209,229,240)"],[0.7,"rgb(146,197,222)"],[0.8,"rgb(67,147,195)"],[0.9,"rgb(33,102,172)"],[1.0,"rgb(5,48,97)"]],"sequential":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"sequentialminus":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]]},"colorway":["#1F77B4","#FF7F0E","#2CA02C","#D62728","#9467BD","#8C564B","#E377C2","#7F7F7F","#BCBD22","#17BECF"],"font":{"color":"rgb(36,36,36)"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"},"bgcolor":"white","radialaxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"rgb(232,232,232)","gridwidth":2,"linecolor":"rgb(36,36,36)","showbackground":true,"showgrid":false,"showline":true,"ticks":"outside","zeroline":false,"zerolinecolor":"rgb(36,36,36)"},"yaxis":{"backgroundcolor":"white","gridcolor":"rgb(232,232,232)","gridwidth":2,"linecolor":"rgb(36,36,36)","showbackground":true,"showgrid":false,"showline":true,"ticks":"outside","zeroline":false,"zerolinecolor":"rgb(36,36,36)"},"zaxis":{"backgroundcolor":"white","gridcolor":"rgb(232,232,232)","gridwidth":2,"linecolor":"rgb(36,36,36)","showbackground":true,"showgrid":false,"showline":true,"ticks":"outside","zeroline":false,"zerolinecolor":"rgb(36,36,36)"}},"shapedefaults":{"fillcolor":"black","line":{"width":0},"opacity":0.3},"ternary":{"aaxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"},"baxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"},"bgcolor":"white","caxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside","title":{"standoff":15},"zeroline":false,"zerolinecolor":"rgb(36,36,36)"},"yaxis":{"automargin":true,"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside","title":{"standoff":15},"zeroline":false,"zerolinecolor":"rgb(36,36,36)"}}},"shapes":[{"line":{"dash":"dot","width":2},"type":"line","x0":1,"x1":0,"y0":0,"y1":1},{"line":{"dash":"dash","width":2},"type":"line","x0":1,"x1":0,"y0":0,"y1":1}],"annotations":[{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(136, 204, 238)"},"opacity":0.8,"showarrow":true,"text":"At \u22649.5","x":0.1068515497553018,"y":0.9375},{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(204, 102, 119)"},"opacity":0.8,"showarrow":true,"text":"At \u22656.5","x":0.6525285481239804,"y":0.6875},{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(221, 204, 119)"},"opacity":0.8,"showarrow":true,"text":"At \u22657.5","x":0.7055464926590538,"y":0.33035714285714285},{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(17, 119, 51)"},"opacity":0.8,"showarrow":true,"text":"At \u22656.5","x":0.6288743882544862,"y":0.5580357142857143}],"font":{"family":"Arial","size":16,"color":"black"},"xaxis":{"zeroline":true,"range":[1,0],"showgrid":true,"title":{"text":"Specificity (reversed)"},"nticks":20,"mirror":"ticks","gridcolor":"#DDD","showspikes":true,"spikemode":"across","spikethickness":2,"spikedash":"solid"},"yaxis":{"zeroline":true,"range":[0,1],"showgrid":true,"title":{"text":"Sensitivity"},"nticks":20,"mirror":"ticks","gridcolor":"#DDD","showspikes":true,"spikemode":"across","spikethickness":2,"spikedash":"solid"},"legend":{"yanchor":"bottom","y":0.01,"xanchor":"right","x":0.99,"bordercolor":"Black","borderwidth":2},"title":{"text":"Loc ROC Curve - xy (rank)"},"autosize":false,"uniformtext":{"minsize":8,"mode":"hide"}},                        {"responsive": true}                    ).then(function(){
+<div>                            <div id="c275fcce-549c-4eae-872a-68552349f611" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                require(["plotly"], function(Plotly) {                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("c275fcce-549c-4eae-872a-68552349f611")) {                    Plotly.newPlot(                        "c275fcce-549c-4eae-872a-68552349f611",                        [{"customdata":[[0.99,0.99],[1.5,1.5],[2.5,2.5],[3.5,3.5],[4.5,4.5],[5.5,5.5],[6.5,6.5],[7.5,7.5],[8.5,8.5],[9.5,9.5],[10.01,10.01]],"hovertemplate":"<b>Specificity</b>: %{x:.2%}<br><b>Sensitivity</b>: %{y:.2%}<br><b>Threshold</b>: \u2264%{customdata[0]}","marker":{"color":"rgb(136, 204, 238)"},"mode":"lines+markers+text","name":"Mean x (Rank), AUC: 0.503","opacity":0.75,"x":[1.0,0.8964110929853181,0.8034257748776509,0.7039151712887439,0.5978792822185971,0.49836867862969003,0.39804241435562804,0.29608482871125613,0.2039151712887439,0.1068515497553018,0.0],"y":[0.0,0.08035714285714286,0.21875,0.32142857142857145,0.38839285714285715,0.49107142857142855,0.5892857142857143,0.6785714285714286,0.8214285714285714,0.9375,1.0],"type":"scatter"},{"customdata":[[10.01,10.01],[9.5,9.5],[8.5,8.5],[7.5,7.5],[6.5,6.5],[5.5,5.5],[4.5,4.5],[3.5,3.5],[2.5,2.5],[1.5,1.5],[0.99,0.99]],"hovertemplate":"<b>Specificity</b>: %{x:.2%}<br><b>Sensitivity</b>: %{y:.2%}<br><b>Threshold</b>: \u2265%{customdata[0]}","marker":{"color":"rgb(204, 102, 119)"},"mode":"lines+markers+text","name":"Mean y (Rank), AUC: 0.709","opacity":0.75,"x":[1.0,0.9021207177814029,0.8205546492659054,0.7446982055464927,0.6525285481239804,0.5546492659053833,0.4551386623164764,0.34176182707993474,0.23246329526916804,0.11827079934747145,0.0],"y":[0.0,0.11160714285714286,0.3125,0.5446428571428571,0.6875,0.7991071428571429,0.9017857142857143,0.9285714285714286,0.9776785714285714,1.0,1.0],"type":"scatter"},{"customdata":[[10.01,10.01],[9.5,9.5],[8.5,8.5],[7.5,7.5],[6.5,6.5],[5.5,5.5],[4.5,4.5],[3.5,3.5],[2.5,2.5],[1.5,1.5],[0.99,0.99]],"hovertemplate":"<b>Specificity</b>: %{x:.2%}<br><b>Sensitivity</b>: %{y:.2%}<br><b>Threshold</b>: \u2265%{customdata[0]}","marker":{"color":"rgb(221, 204, 119)"},"mode":"lines+markers+text","name":"SD x (Rank), AUC: 0.604","opacity":0.75,"x":[1.0,0.8907014681892332,0.7887438825448614,0.7055464926590538,0.6166394779771615,0.5301794453507341,0.4363784665579119,0.3401305057096248,0.23409461663947798,0.11827079934747145,0.0],"y":[0.0,0.049107142857142856,0.13839285714285715,0.33035714285714285,0.49107142857142855,0.6651785714285714,0.7991071428571429,0.9196428571428571,0.9866071428571429,1.0,1.0],"type":"scatter"},{"customdata":[[10.01,10.01],[9.5,9.5],[8.5,8.5],[7.5,7.5],[6.5,6.5],[5.5,5.5],[4.5,4.5],[3.5,3.5],[2.5,2.5],[1.5,1.5],[0.99,0.99]],"hovertemplate":"<b>Specificity</b>: %{x:.2%}<br><b>Sensitivity</b>: %{y:.2%}<br><b>Threshold</b>: \u2265%{customdata[0]}","marker":{"color":"rgb(17, 119, 51)"},"mode":"lines+markers+text","name":"SD y (Rank), AUC: 0.627","opacity":0.75,"x":[1.0,0.8988580750407831,0.8001631321370309,0.7161500815660685,0.6288743882544862,0.534257748776509,0.43800978792822187,0.33442088091353994,0.2275693311582382,0.11745513866231648,0.0],"y":[0.0,0.09375,0.20089285714285715,0.38839285714285715,0.5580357142857143,0.6875,0.8080357142857143,0.8883928571428571,0.9508928571428571,0.9955357142857143,1.0],"type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"rgb(36,36,36)"},"error_y":{"color":"rgb(36,36,36)"},"marker":{"line":{"color":"white","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"rgb(36,36,36)","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"rgb(36,36,36)"},"baxis":{"endlinecolor":"rgb(36,36,36)","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"rgb(36,36,36)"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"contour"}],"heatmapgl":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"heatmapgl"}],"heatmap":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"histogram2d"}],"histogram":[{"marker":{"line":{"color":"white","width":0.6}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scattermapbox"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"},"colorscale":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"rgb(237,237,237)"},"line":{"color":"white"}},"header":{"fill":{"color":"rgb(217,217,217)"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":1,"tickcolor":"rgb(36,36,36)","ticks":"outside"}},"colorscale":{"diverging":[[0.0,"rgb(103,0,31)"],[0.1,"rgb(178,24,43)"],[0.2,"rgb(214,96,77)"],[0.3,"rgb(244,165,130)"],[0.4,"rgb(253,219,199)"],[0.5,"rgb(247,247,247)"],[0.6,"rgb(209,229,240)"],[0.7,"rgb(146,197,222)"],[0.8,"rgb(67,147,195)"],[0.9,"rgb(33,102,172)"],[1.0,"rgb(5,48,97)"]],"sequential":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]],"sequentialminus":[[0.0,"#440154"],[0.1111111111111111,"#482878"],[0.2222222222222222,"#3e4989"],[0.3333333333333333,"#31688e"],[0.4444444444444444,"#26828e"],[0.5555555555555556,"#1f9e89"],[0.6666666666666666,"#35b779"],[0.7777777777777778,"#6ece58"],[0.8888888888888888,"#b5de2b"],[1.0,"#fde725"]]},"colorway":["#1F77B4","#FF7F0E","#2CA02C","#D62728","#9467BD","#8C564B","#E377C2","#7F7F7F","#BCBD22","#17BECF"],"font":{"color":"rgb(36,36,36)"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"white","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"white","polar":{"angularaxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"},"bgcolor":"white","radialaxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"}},"scene":{"xaxis":{"backgroundcolor":"white","gridcolor":"rgb(232,232,232)","gridwidth":2,"linecolor":"rgb(36,36,36)","showbackground":true,"showgrid":false,"showline":true,"ticks":"outside","zeroline":false,"zerolinecolor":"rgb(36,36,36)"},"yaxis":{"backgroundcolor":"white","gridcolor":"rgb(232,232,232)","gridwidth":2,"linecolor":"rgb(36,36,36)","showbackground":true,"showgrid":false,"showline":true,"ticks":"outside","zeroline":false,"zerolinecolor":"rgb(36,36,36)"},"zaxis":{"backgroundcolor":"white","gridcolor":"rgb(232,232,232)","gridwidth":2,"linecolor":"rgb(36,36,36)","showbackground":true,"showgrid":false,"showline":true,"ticks":"outside","zeroline":false,"zerolinecolor":"rgb(36,36,36)"}},"shapedefaults":{"fillcolor":"black","line":{"width":0},"opacity":0.3},"ternary":{"aaxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"},"baxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"},"bgcolor":"white","caxis":{"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside"}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside","title":{"standoff":15},"zeroline":false,"zerolinecolor":"rgb(36,36,36)"},"yaxis":{"automargin":true,"gridcolor":"rgb(232,232,232)","linecolor":"rgb(36,36,36)","showgrid":false,"showline":true,"ticks":"outside","title":{"standoff":15},"zeroline":false,"zerolinecolor":"rgb(36,36,36)"}}},"shapes":[{"line":{"dash":"dot","width":2},"type":"line","x0":1,"x1":0,"y0":0,"y1":1}],"annotations":[{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(136, 204, 238)"},"opacity":0.8,"showarrow":true,"text":"At \u22649.5","x":0.1068515497553018,"y":0.9375},{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(204, 102, 119)"},"opacity":0.8,"showarrow":true,"text":"At \u22656.5","x":0.6525285481239804,"y":0.6875},{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(221, 204, 119)"},"opacity":0.8,"showarrow":true,"text":"At \u22657.5","x":0.7055464926590538,"y":0.33035714285714285},{"arrowhead":2,"arrowwidth":2,"bgcolor":"#FFF","bordercolor":"#000","font":{"color":"rgb(17, 119, 51)"},"opacity":0.8,"showarrow":true,"text":"At \u22656.5","x":0.6288743882544862,"y":0.5580357142857143}],"font":{"family":"Arial","size":16,"color":"black"},"xaxis":{"zeroline":true,"range":[1,0],"showgrid":true,"title":{"text":"Specificity (reversed)"},"nticks":20,"mirror":"ticks","gridcolor":"#DDD","showspikes":true,"spikemode":"across","spikethickness":2,"spikedash":"solid"},"yaxis":{"zeroline":true,"range":[0,1],"showgrid":true,"title":{"text":"Sensitivity"},"nticks":20,"mirror":"ticks","gridcolor":"#DDD","showspikes":true,"spikemode":"across","spikethickness":2,"spikedash":"solid"},"legend":{"yanchor":"bottom","y":0.01,"xanchor":"right","x":0.99,"bordercolor":"Black","borderwidth":2},"title":{"text":"Loc ROC Curve - xy (rank)"},"autosize":false,"uniformtext":{"minsize":8,"mode":"hide"}},                        {"responsive": true}                    ).then(function(){
                             
-var gd = document.getElementById('deeb6cd7-e6df-4a3f-a90b-6434bc4788a7');
+var gd = document.getElementById('c275fcce-549c-4eae-872a-68552349f611');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -15874,6 +16056,22 @@ if (outputEl) {{
 
 </div>
 
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython2"><pre><span></span> 
+</pre></div>
+
+     </div>
+</div>
+</div>
 </div>
 
 </div>

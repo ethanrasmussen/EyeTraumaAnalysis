@@ -469,7 +469,32 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[271]:
+# In[353]:
+
+
+np.round(roc_df["threshold"],2)
+
+
+# In[352]:
+
+
+formula = "{}"
+formula.format(1), formula.format(2.0), formula.format(3.1), formula.format(3.14159265358), formula.format(10.1)
+
+
+# In[365]:
+
+
+np.dstack((np.round(roc_df["threshold"],2), roc_df["threshold"])).shape
+
+
+# In[374]:
+
+
+var_labels["Ranks-Location-SD-y"]
+
+
+# In[379]:
 
 
 title = "Loc ROC Curve - xy (rank)"
@@ -493,7 +518,13 @@ for ind, predictor_name in enumerate(predictor_names):
         #text=roc_df["threshold"].apply((comparator+"{:}").format), textposition="bottom right",
         name=f"{var_labels[predictor_name]}, AUC: {auc:0.3f}",
         marker=dict(color=color),
+        customdata=np.stack((np.round(roc_df["threshold"],2),roc_df["threshold"]),axis=-1),
+        hovertemplate =
+        "<b>Specificity</b>: %{x:.2%}" + "<br>" +
+        "<b>Sensitivity</b>: %{y:.2%}" + "<br>" +
+        "<b>Threshold</b>: " + comparator + "%{customdata[0]}"
     ))
+
 
     fig.add_annotation(
         x=roc_df["specificity"][max_youden_loc], y=roc_df["sensitivity"][max_youden_loc],
@@ -506,9 +537,15 @@ for ind, predictor_name in enumerate(predictor_names):
         arrowwidth=2,
         arrowhead=2)
 
-customize_roc_curve(fig)
+customize_roc_curve(fig, add_reference_line=False)
 fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
 fig.show()
-save_plotly_figure(fig, title)
+#save_plotly_figure(fig, title)
+
+
+# In[ ]:
+
+
+
 
