@@ -81,13 +81,13 @@ for ind, row in kmeans_labels.iterrows():
     # to be included in the combined mask
     segmentations_trues[filename] = np.any(kmeans_masks[correct_indices], axis=0)
     clusters_trues[filename] = correct_indices
-segmentations_preds = {}
-clusters_preds = {}
 
 
 # In[8]:
 
 
+segmentations_preds = {}
+clusters_preds = {}
 for ind, filename in enumerate(kmeans_labels["Filename"]):
     metrics = all_metrics.loc[filename]
     kmeans_masks = all_kmeans_masks[filename]

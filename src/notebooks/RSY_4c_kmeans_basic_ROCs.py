@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[109]:
+# In[5]:
 
 
 import os
@@ -32,7 +32,13 @@ import EyeTraumaAnalysis
 from EyeTraumaAnalysis import calculate_roc
 
 
-# In[14]:
+# In[8]:
+
+
+os.getcwd()
+
+
+# In[9]:
 
 
 importlib.reload(EyeTraumaAnalysis);
@@ -482,19 +488,7 @@ formula = "{}"
 formula.format(1), formula.format(2.0), formula.format(3.1), formula.format(3.14159265358), formula.format(10.1)
 
 
-# In[365]:
-
-
-np.dstack((np.round(roc_df["threshold"],2), roc_df["threshold"])).shape
-
-
-# In[374]:
-
-
-var_labels["Ranks-Location-SD-y"]
-
-
-# In[379]:
+# In[380]:
 
 
 title = "Loc ROC Curve - xy (rank)"
@@ -541,7 +535,7 @@ customize_roc_curve(fig, add_reference_line=False)
 fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
 fig.show()
-#save_plotly_figure(fig, title)
+save_plotly_figure(fig, title)
 
 
 # In[ ]:

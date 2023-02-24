@@ -14720,8 +14720,6 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     <span class="c1"># to be included in the combined mask</span>
     <span class="n">segmentations_trues</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">kmeans_masks</span><span class="p">[</span><span class="n">correct_indices</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">clusters_trues</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="o">=</span> <span class="n">correct_indices</span>
-<span class="n">segmentations_preds</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">clusters_preds</span> <span class="o">=</span> <span class="p">{}</span>
 </pre></div>
 
      </div>
@@ -14737,7 +14735,9 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kmeans_labels</span><span class="p">[</span><span class="s2">&quot;Filename&quot;</span><span class="p">]):</span>
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">segmentations_preds</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">clusters_preds</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kmeans_labels</span><span class="p">[</span><span class="s2">&quot;Filename&quot;</span><span class="p">]):</span>
     <span class="n">metrics</span> <span class="o">=</span> <span class="n">all_metrics</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span>
     <span class="n">kmeans_masks</span> <span class="o">=</span> <span class="n">all_kmeans_masks</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span>
     <span class="n">chosen</span> <span class="o">=</span> <span class="n">EyeTraumaAnalysis</span><span class="o">.</span><span class="n">kmeans</span><span class="o">.</span><span class="n">choose_kmeans_cluster</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>

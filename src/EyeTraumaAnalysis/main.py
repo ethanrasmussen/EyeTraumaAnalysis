@@ -6,16 +6,24 @@ from matplotlib import pyplot as plt
 import cv2
 
 
-# if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
-#     os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
-# directory_path = os.path.abspath(os.path.join('data'))
 
-# Get pupil center data for images from excel
-# opencv function cv2.getRotationMatrix2D gives an error if center input is np.int64 instead of python raw int or float
-li_df = pd.read_excel("../../data/01_raw/data_li.xlsx", dtype={"centerX":float, "centerY":float})
-h_df = pd.read_excel("../../data/01_raw/data_h.xlsx", dtype={"centerX":float, "centerY":float})
-# contains info on all the images
-photos_df = pd.read_excel("../../data/01_raw/photo_files_data.xlsx", dtype={"centerX":float, "centerY":float})
+try:
+    if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
+        # if cwd is located where this python file is
+        #os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
+        prepath = "../../"
+    else:
+        prepath = ""
+    # Get pupil center data for images from excel
+    # opencv function cv2.getRotationMatrix2D gives an error if center input is np.int64 instead of python raw int or float
+    li_df = pd.read_excel(prepath+"data/01_raw/data_li.xlsx", dtype={"centerX":float, "centerY":float})
+    h_df = pd.read_excel(prepath+"data/01_raw/data_h.xlsx", dtype={"centerX":float, "centerY":float})
+    # contains info on all the images
+    photos_df = pd.read_excel(prepath+"data/01_raw/photo_files_data.xlsx", dtype={"centerX":float, "centerY":float})
+except FileNotFoundError as err:
+    print("cwd: ",os.getcwd())
+    import traceback
+    traceback.print_exc()
 
 
 #############################################################################

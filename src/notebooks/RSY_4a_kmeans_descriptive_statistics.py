@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[2]:
+# In[5]:
 
 
 import os
@@ -16,16 +16,16 @@ import scipy.ndimage as snd
 import skimage
 import uuid
 
-if os.getcwd().split("/")[-1] == "notebooks":
-    os.chdir("../..")
+if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
+    os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
 
-import EyeTraumaAnalysis
+import src.EyeTraumaAnalysis
 
 print(directory_path)
-importlib.reload(EyeTraumaAnalysis);
+importlib.reload(src.EyeTraumaAnalysis);
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -38,22 +38,22 @@ import plotly
 
 # # Load metrics
 
-# In[ ]:
+# In[7]:
 
 
-all_metrics = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
-all_metrics_flat = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
-all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
+all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_p4" + ".pkl")
+all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat_p4" + ".pkl")
+all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg_p4" + ".pkl")
 
 
 # # Alternatively, recalculate metrics
 
 # ## Load data from excel
 
-# In[3]:
+# In[9]:
 
 
-kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx", dtype={
+kmeans_labels = pd.read_excel("../../data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx", dtype={
     "Correct 1":"Int64", # "Int64" is from pandas, unlike int64 and allows null
     "Correct 2":"Int64",
     "Correct 3":"Int64",
@@ -65,22 +65,22 @@ kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correc
 
 # ## Calculate metrics
 
-# In[5]:
+# In[12]:
 
 
 all_metrics = []
 all_kmeans_masks = {}
 for ind, filename in enumerate(kmeans_labels["Filename"]):
-    img_bgr = skimage.io.imread(os.path.join("data/01_raw/",filename))
-    centers, ranges, res_bgr, kmeans_masks = EyeTraumaAnalysis.kmeans.create_kmeans(img_bgr)
-    metrics = EyeTraumaAnalysis.kmeans.get_kmeans_metrics(centers, ranges, kmeans_masks)
+    img_bgr = skimage.io.imread(os.path.join("../../data/01_raw/",filename))
+    centers, ranges, res_bgr, kmeans_masks = src.EyeTraumaAnalysis.kmeans.create_kmeans(img_bgr)
+    metrics = src.EyeTraumaAnalysis.kmeans.get_kmeans_metrics(centers, ranges, kmeans_masks)
     all_metrics.append(metrics)
     all_kmeans_masks[filename] = kmeans_masks
 
 all_metrics = pd.concat(all_metrics, keys=kmeans_labels["Filename"])
 
 
-# In[6]:
+# In[13]:
 
 
 all_metrics.loc[:, ("Labels","Value","","")] = "False"
@@ -109,18 +109,18 @@ all_metrics.index.names = [all_metrics.index.names[0], "Mask"]
 
 # ## Create aggregate version of metrics df
 
-# In[8]:
+# In[14]:
 
 
 all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["median"])[["Ranks","Values"]]
 
 all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["min","median","max"])
-all_metrics_agg.to_excel("outputs/kmeans-descriptive/aggregate.xlsx")
+all_metrics_agg.to_excel("../../outputs/kmeans-descriptive/aggregate.xlsx")
 
 
 # ## Create flat version of metrics df
 
-# In[9]:
+# In[15]:
 
 
 all_metrics_flat = all_metrics.copy()
@@ -180,7 +180,7 @@ all_metrics_flat["Values-Color-Center-H360"] = all_metrics_flat["Values-Color-Ce
 
 # ## Save values so they don't have to be rerun every time
 
-# In[10]:
+# In[ ]:
 
 
 all_metrics.to_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
@@ -200,7 +200,7 @@ all_metrics_agg.to_excel("data/03_first_25percent_metrics/color_and_spatial_metr
 
 
 
-# In[139]:
+# In[16]:
 
 
 def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive/"):
@@ -209,7 +209,7 @@ def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="out
                     full_html=True, include_plotlyjs="directory" )
 
 
-# In[104]:
+# In[17]:
 
 
 color_discrete_map = {
@@ -289,7 +289,7 @@ plotly_template = "plotly_dark"  #"simple_white"
 
 # # Plot
 
-# In[107]:
+# In[ ]:
 
 
 fig = px.box(all_metrics_flat, x="Labels-Value", y="Values-Color-Center-V", points="all",
@@ -302,7 +302,7 @@ save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[105]:
+# In[ ]:
 
 
 fig = px.scatter(all_metrics_flat, x="Values-Color-Center-H", y="Values-Color-Center-V",
@@ -315,7 +315,7 @@ fig.for_each_trace( lambda trace: trace.update(marker=dict(size=2, opacity=0.8))
 fig.show()
 
 
-# In[117]:
+# In[ ]:
 
 
 fig = px.scatter_matrix(all_metrics_flat,
@@ -329,7 +329,7 @@ save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[119]:
+# In[ ]:
 
 
 fig = px.scatter_3d(all_metrics_flat,
@@ -343,7 +343,7 @@ save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[121]:
+# In[ ]:
 
 
 fig = px.scatter_polar(all_metrics_flat, theta="Ranks-Color-Center-H360", r="Ranks-Color-Center-S",
@@ -355,7 +355,7 @@ fig.update_traces(marker=dict(size=4, opacity=0.8))
 fig.show()
 
 
-# In[123]:
+# In[ ]:
 
 
 fig = px.scatter_polar(all_metrics_flat, theta="Values-Color-Center-H", r="Values-Color-Center-S",
@@ -377,7 +377,7 @@ save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[126]:
+# In[ ]:
 
 
 fig = px.histogram(all_metrics_flat, x="Values-Color-Center-H", marginal="box", opacity=0.6,
@@ -411,7 +411,7 @@ title = "HSV histogram with box plot- V val"
 save_plotly_figure(fig, title)
 
 
-# In[127]:
+# In[ ]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -447,7 +447,7 @@ title = "HSV histogram with box plot- V rank"
 save_plotly_figure(fig, title)
 
 
-# In[128]:
+# In[ ]:
 
 
 fig = px.scatter_matrix(all_metrics_flat,
@@ -461,16 +461,18 @@ title = "Location scatter matrix"
 save_plotly_figure(fig,title)
 
 
-# In[131]:
+# In[ ]:
 
 
 
 
 
-# In[134]:
+# In[19]:
 
 
-fig = px.histogram(all_metrics_flat, x="Values-Location-Mean-x", marginal="box", opacity=0.6,
+all_metrics_flat2 = all_metrics_flat[all_metrics_flat["Ranks-Color-Center-V"] >= 4]
+
+fig = px.histogram(all_metrics_flat2, x="Values-Location-Mean-x", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
                    color="Labels-Value", color_discrete_map=color_discrete_map,
                    category_orders=category_orders, labels=var_labels, template=plotly_template)
@@ -478,9 +480,9 @@ fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
 title = "Location histogram with box plot- Mean x"
-save_plotly_figure(fig, title)
+# save_plotly_figure(fig, title)
 
-fig = px.histogram(all_metrics_flat, x="Values-Location-Mean-y", marginal="box", opacity=0.6,
+fig = px.histogram(all_metrics_flat2, x="Values-Location-Mean-y", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
                    color="Labels-Value", color_discrete_map=color_discrete_map,
                    category_orders=category_orders, labels=var_labels, template=plotly_template)
@@ -488,9 +490,9 @@ fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
 title = "Location histogram with box plot- Mean y"
-save_plotly_figure(fig, title)
+# save_plotly_figure(fig, title)
 
-fig = px.histogram(all_metrics_flat, x="Values-Location-SD-x", marginal="box", opacity=0.6,
+fig = px.histogram(all_metrics_flat2, x="Values-Location-SD-x", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
                    color="Labels-Value", color_discrete_map=color_discrete_map,
                    category_orders=category_orders, labels=var_labels, template=plotly_template)
@@ -498,19 +500,19 @@ fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
 title = "Location histogram with box plot- SD x"
-save_plotly_figure(fig, title)
+# save_plotly_figure(fig, title)
 
-fig = px.histogram(all_metrics_flat, x="Values-Location-SD-y", marginal="box", opacity=0.6,
+fig = px.histogram(all_metrics_flat2, x="Values-Location-SD-y", marginal="box", opacity=0.6,
                    barmode="group",  histnorm="percent",
                    color="Labels-Value", category_orders=category_orders, labels=var_labels, template="plotly_dark")
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
 title = "Location histogram with box plot- SD y"
-save_plotly_figure(fig, title)
+# save_plotly_figure(fig, title)
 
 
-# In[124]:
+# In[ ]:
 
 
 

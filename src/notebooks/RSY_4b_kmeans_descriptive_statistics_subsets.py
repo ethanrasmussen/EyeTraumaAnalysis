@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[5]:
 
 
 import os
@@ -27,29 +27,54 @@ if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this fi
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
-
-import EyeTraumaAnalysis
-
-
-# In[ ]:
+print(directory_path)
+import src.EyeTraumaAnalysis
 
 
-importlib.reload(EyeTraumaAnalysis);
+# In[6]:
+
+
+importlib.reload(src.EyeTraumaAnalysis);
 
 
 # # Load metrics
 
-# In[2]:
+# In[7]:
 
 
-all_metrics = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
-all_metrics_flat = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
-all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
+get_ipython().system('pip3 install pickle5')
+import pickle5 as pickle
 
 
-# # Prepare for plotting
+# In[8]:
 
-# In[4]:
+
+# reload data as pickle protocol 4
+with open("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl", "rb") as fh:
+  data = pickle.load(fh)
+  data.to_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + "_p4" + ".pkl")
+with open("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl", "rb") as fh:
+  data = pickle.load(fh)
+  data.to_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + "_p4" + ".pkl")
+with open("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl", "rb") as fh:
+  data = pickle.load(fh)
+  data.to_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + "_p4" + ".pkl")
+
+
+# In[9]:
+
+
+# all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
+# all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
+# all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
+all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + "_p4" + ".pkl")
+all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + "_p4" + ".pkl")
+all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + "_p4" + ".pkl")
+
+
+# 
+
+# In[11]:
 
 
 def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive-subsets/"):
@@ -58,7 +83,7 @@ def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="out
                     full_html=True, include_plotlyjs="directory" )
 
 
-# In[5]:
+# In[12]:
 
 
 color_discrete_map = {
@@ -155,7 +180,7 @@ plotly_template = "plotly_dark"  #"simple_white"
 
 # # Plot
 
-# In[32]:
+# In[13]:
 
 
 fig = px.histogram(all_metrics_flat, x="Values-Color-Center-H", marginal="box", opacity=0.6,
@@ -172,7 +197,7 @@ title = "HSV histogram with box plot- H val split at >=100"
 save_plotly_figure(fig, title)
 
 
-# In[33]:
+# In[14]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -187,7 +212,7 @@ title = "HSV histogram with box plot- H rank split at V val>75"
 save_plotly_figure(fig, title)
 
 
-# In[35]:
+# In[15]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -202,7 +227,7 @@ title = "HSV histogram with box plot- H val split at V rank>=4"
 save_plotly_figure(fig, title)
 
 
-# In[37]:
+# In[16]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -217,7 +242,7 @@ title = "HSV histogram with box plot- H val split at V rank>=5"
 save_plotly_figure(fig, title)
 
 
-# In[40]:
+# In[17]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -232,7 +257,7 @@ title = "HSV histogram with box plot- H val split at V rank>=6"
 save_plotly_figure(fig, title)
 
 
-# In[6]:
+# In[18]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,

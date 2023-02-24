@@ -30,7 +30,7 @@ print(directory_path)
 importlib.reload(EyeTraumaAnalysis);
 
 
-# In[4]:
+# In[2]:
 
 
 import numpy as np
@@ -46,13 +46,13 @@ import cv2
 # images = ["10030.jpg", "10031.jpg", "10032.jpg", "10033.jpg", "10034.jpg", "10035.jpg", "10036.jpg", "10037.jpg", "10038.jpg", "10039.jpg", "10040.jpg", "10041.jpg", "10042.jpg"]
 
 
-# In[5]:
+# In[3]:
 
 
 images = os.listdir('./data/01_raw/Ergonautus/Full Dataset/')
 
 
-# In[6]:
+# In[4]:
 
 
 def get_spatial_metrics(mask):
@@ -69,11 +69,11 @@ def get_spatial_metrics(mask):
     return to_return
 
 
-# In[7]:
+# In[18]:
 
 
 ### Create K means clusters and masks
-image = EyeTraumaAnalysis.Image("data/01_raw/11000.jpg")
+image = EyeTraumaAnalysis.Image("data/01_raw/14436.png")
 img_bgr = image.img
 img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
 Z_hsv = img_hsv.reshape((-1,3))
@@ -128,43 +128,56 @@ get_spatial_metrics(kmeans_thresholds[0])
 
 
 
-# In[10]:
+# In[14]:
 
 
 ### Per Cluster Masking ### <-- for individual image use
 
-row_ct = int(np.sqrt(K))
-col_ct = int(np.ceil(K/row_ct))
-fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
-for ind in range(row_ct*col_ct):
-    if ind < K:
-        #target1 = cv2.bitwise_and(image.img,image.img, mask=~kmeans_thresholds[ind])
-        target1 = image.img.copy()
-        target1[kmeans_thresholds[ind].astype(bool)] = [127,255,127,255]
-        axs.flat[ind].imshow(target1)
-        spatial_metrics = get_spatial_metrics(kmeans_thresholds[ind])
-        hsv_rank = centers_indices[ind]
-        hsv_center = centers_sorted[ind]
-        # Draw left title
-        axs.flat[ind].set_title(
-            "HSV \n"+
-            f"#{hsv_rank[0]+1}, #{hsv_rank[1]+1}, #{hsv_rank[2]+1}" + "\n" +
-            f"({hsv_center[0]}, {hsv_center[1]}, {hsv_center[2]})",
-            fontsize=8, loc="left"
-        )
-        # Draw right title
-        axs.flat[ind].set_title(
-            f"Location:" + "\n"+
-            f"({spatial_metrics['x']['mean']*100:.1f}, {spatial_metrics['y']['mean']:.1%})" + "\n" +
-            f"({spatial_metrics['x']['sd']*100:.1f}, {spatial_metrics['y']['sd']:.1%})",
-            fontsize=8, loc="right", fontfamily="monospace",
-        )
-        # axs.flat[ind].set_title(
-        #     f"HSV center: [{centers_sorted[ind,0]},{centers_sorted[ind,1]},{centers_sorted[ind,2]}]" )
-        #axs.flat[ind].imshow(kmeans_thresholds[ind], cmap="gray")
-    else:
-        # remove axes for empty cells
-        axs.flat[ind].axis("off")
+def draw_cluster_masking(img):
+    row_ct = int(np.sqrt(K))
+    col_ct = int(np.ceil(K/row_ct))
+    fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
+    for ind in range(row_ct*col_ct):
+        if ind < K:
+            #target1 = cv2.bitwise_and(image.img,image.img, mask=~kmeans_thresholds[ind])
+            target1 = img.copy()
+            target1[kmeans_thresholds[ind].astype(bool)] = [127,255,127,255]
+            axs.flat[ind].imshow(target1)
+            spatial_metrics = get_spatial_metrics(kmeans_thresholds[ind])
+            hsv_rank = centers_indices[ind]
+            hsv_center = centers_sorted[ind]
+            # Draw left title
+            axs.flat[ind].set_title(
+                "HSV \n"+
+                f"#{hsv_rank[0]+1}, #{hsv_rank[1]+1}, #{hsv_rank[2]+1}" + "\n" +
+                f"({hsv_center[0]}, {hsv_center[1]}, {hsv_center[2]})",
+                fontsize=8, loc="left"
+            )
+            # Draw right title
+            axs.flat[ind].set_title(
+                f"Location:" + "\n"+
+                f"({spatial_metrics['x']['mean']*100:.1f}, {spatial_metrics['y']['mean']:.1%})" + "\n" +
+                f"({spatial_metrics['x']['sd']*100:.1f}, {spatial_metrics['y']['sd']:.1%})",
+                fontsize=8, loc="right", fontfamily="monospace",
+            )
+            # axs.flat[ind].set_title(
+            #     f"HSV center: [{centers_sorted[ind,0]},{centers_sorted[ind,1]},{centers_sorted[ind,2]}]" )
+            #axs.flat[ind].imshow(kmeans_thresholds[ind], cmap="gray")
+        else:
+            # remove axes for empty cells
+            axs.flat[ind].axis("off")
+
+
+# In[19]:
+
+
+draw_cluster_masking(image.img)
+
+
+# In[17]:
+
+
+draw_cluster_masking(image.img)
 
 
 # In[101]:
