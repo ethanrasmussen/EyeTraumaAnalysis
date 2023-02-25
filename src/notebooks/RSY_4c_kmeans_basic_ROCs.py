@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[2]:
 
 
 import os
@@ -46,7 +46,7 @@ importlib.reload(EyeTraumaAnalysis);
 
 # # Load metrics
 
-# In[11]:
+# In[3]:
 
 
 # Load metrics
@@ -57,7 +57,7 @@ all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spat
 
 # # Test function for calculating roc metrics
 
-# In[41]:
+# In[4]:
 
 
 importlib.reload(EyeTraumaAnalysis.kmeans)
@@ -68,16 +68,85 @@ auc, comparator
 
 # # Prepare for plotting
 
-# In[5]:
+# In[6]:
 
 
-def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-basic-rocs/"):
-    fig.write_image(os.path.join(directory, title + ".png"))
-    fig.write_html( os.path.join(directory, title + ".html"),
+default_plotly_save_scale = 4
+notebook_name = "kmeans-basic-rocs"
+
+def get_path_to_save(
+        plot_props:dict=None, file_prefix="",
+        save_filename:str=None, save_in_subfolder:str=None, extension="jpg", dot=".", create_folder_if_necessary=True):
+    replace_characters = {
+        "$": "",
+        "\\frac":"",
+        "\\mathrm":"",
+        "\\left(":"(",
+        "\\right)":")",
+        "\\left[":"[",
+        "\\right]":"]",
+        "\\": "",
+        "/":"-",
+        "{": "(",
+        "}": ")",
+        "<":"",
+        ">":"",
+        "?":"",
+        "_":"",
+        "^":"",
+        "*":"",
+        "!":"",
+        ":":"-",
+        "|":"-",
+        ".":"_",
+    }
+    # define save_filename based on plot_props
+    if save_filename is None:
+        save_filename = "unnamed"
+
+    save_path = ["outputs", notebook_name,]
+    if save_in_subfolder is not None:
+        if isinstance(save_in_subfolder, (list, tuple, set, np.ndarray) ):
+            save_path.append(**save_in_subfolder)
+        else:  # should be a string then
+            save_path.append(save_in_subfolder)
+    save_path = os.path.join(*save_path)
+
+    if not os.path.exists(save_path) and create_folder_if_necessary:
+        os.makedirs(save_path)
+    return os.path.join(save_path, file_prefix+save_filename+dot+extension)
+
+def save_plotly_figure(fig: plotly.graph_objs.Figure,
+                       title: str,
+                       animated=False,
+                       scale=None,
+                       save_in_subfolder:str=None,
+                       extensions=None
+                       ):
+    if scale is None:
+        scale = default_plotly_save_scale
+    if extensions is None:
+        extensions = ["html"]
+        if not animated:
+            # options = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json']
+            extensions += ["png","pdf"]
+
+    for extension in extensions:
+        try:
+            if extension in ["htm","html"]:
+                #fig.update_layout(title=dict(visible=False))
+                fig.write_html( get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension),
                     full_html=True, include_plotlyjs="directory" )
+            else:
+                #if extension == "png":
+                #    fig.update_layout(title=dict(visible=False))
+                fig.write_image(get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension), scale=scale)
+        except ValueError as exc:
+            import traceback
+            traceback.print_exception(exc)
 
 
-# In[14]:
+# In[10]:
 
 
 color_discrete_map = {
@@ -173,7 +242,7 @@ roc_hover_data = {
 plotly_template = "plotly_dark"  #"simple_white"
 
 
-# In[48]:
+# In[11]:
 
 
 def customize_roc_curve(fig: plotly.graph_objs.Figure, add_reference_line=True):
@@ -219,7 +288,7 @@ def customize_roc_curve(fig: plotly.graph_objs.Figure, add_reference_line=True):
     )
 
 
-# In[310]:
+# In[12]:
 
 
 def add_threshold_annotations(fig: plotly.graph_objs.Figure, roc_df, comparator: str, color=None):
@@ -253,25 +322,7 @@ def add_auc_annotation(fig: plotly.graph_objs.Figure, auc):
 
 # # Plot
 
-# In[311]:
-
-
-title = "HSV ROC curve - V value"
-predictor_name = "Values-Color-Center-V"
-roc_df, auc, comparator = calculate_roc(all_metrics_flat["Labels-Value"],
-                               all_metrics_flat[predictor_name], true_value="True")
-fig = px.area(roc_df,
-              x="specificity", y="sensitivity",
-              hover_data=roc_hover_data, markers=True, title=f"{var_labels[predictor_name]}, AUC: {auc:0.3f}",
-              category_orders=category_orders, labels=var_labels, template=plotly_template,
-              )
-customize_roc_curve(fig)
-add_auc_annotation(fig, auc)
-fig.show()
-save_plotly_figure(fig, title)
-
-
-# In[312]:
+# In[14]:
 
 
 title = "HSV ROC curve - V rank"
@@ -292,7 +343,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[313]:
+# In[16]:
 
 
 for title, predictor_name in zip(
@@ -313,7 +364,7 @@ for title, predictor_name in zip(
     save_plotly_figure(fig, title)
 
 
-# In[314]:
+# In[18]:
 
 
 for title, predictor_name in zip(
@@ -333,7 +384,7 @@ for title, predictor_name in zip(
     save_plotly_figure(fig, title)
 
 
-# In[315]:
+# In[19]:
 
 
 
@@ -371,7 +422,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[319]:
+# In[20]:
 
 
 title = "HSV ROC Curve - HSV centers (rank)"
@@ -425,16 +476,8 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[ ]:
+# In[21]:
 
-
-
-
-
-# In[322]:
-
-
-import plotly.graph_objects as go
 
 title = "Loc ROC Curve - xy value"
 predictor_names = ["Values-Location-Mean-x", "Values-Location-Mean-y",
@@ -475,12 +518,6 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[353]:
-
-
-np.round(roc_df["threshold"],2)
-
-
 # In[352]:
 
 
@@ -488,7 +525,7 @@ formula = "{}"
 formula.format(1), formula.format(2.0), formula.format(3.1), formula.format(3.14159265358), formula.format(10.1)
 
 
-# In[380]:
+# In[22]:
 
 
 title = "Loc ROC Curve - xy (rank)"
