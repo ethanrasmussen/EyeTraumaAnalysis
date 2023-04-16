@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import scipy
 import cv2
+from matplotlib import pyplot as plt
+import src.EyeTraumaAnalysis
 
 
 def create_kmeans(img_bgr, K=10):  # K is number of clusters
@@ -42,6 +44,51 @@ def create_kmeans(img_bgr, K=10):  # K is number of clusters
     maxs = np.max([np.min(img_hsv[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
     ranges = pd.DataFrame(maxs - mins, columns=["H","S","V"])
     return centers, ranges, res_bgr, kmeans_masks
+
+def reverse_clustered_image(image_path, K=10):
+    # Load the image
+    summed_image = plt.imread(image_path)
+    print(summed_image.shape)
+
+    # Split the image into its component masks
+    masks = []
+    for ind in range(K):
+        mask = np.zeros(summed_image.shape[:2], dtype=np.uint8)
+        mask[summed_image[:,:,0] == ind*25] = 255
+        masks.append(mask)
+
+
+    # get the centers
+    centers = []
+    for mask in masks:
+        original_image = src.EyeTraumaAnalysis.Image(image_path)
+        image = cv2.cvtColor(original_image.img, cv2.COLOR_BGR2HSV)
+        with_mask = cv2.bitwise_and(image, image, mask=~mask)
+        # center = np.mean(with_mask, where=with_mask, axis=[0,1])
+        center = np.mean(with_mask, axis=(0,1))
+        centers.append(center)
+    centers = np.uint8(centers)
+        # nonzeros = np.nonzero(mask)
+        # center = np.mean(nonzeros, axis=1)
+        # centers.append(center)
+    # sort centers by HSV "value" - aka sort by grayscale
+    # centers = centers.argsort()
+    # centers = centers[centers[:, 0].argsort()]
+    # TODO: find solution to HSV value sorting for centers when reverse engineered
+
+    print(centers.shape)
+
+    # can't make centers a DataFrame until now since needed numpy for opencv in range or numpy comparison
+    centers = pd.DataFrame(centers, columns=["H", "S", "V"])
+
+    summed_image = cv2.cvtColor(summed_image, cv2.COLOR_BGR2HSV)
+    print(summed_image.shape)
+
+    mins = np.array([np.min(summed_image, where=kmeans_mask.astype(bool), axis=(0,1)) for kmeans_mask in masks])
+    maxs = np.max([np.min(summed_image, where=kmeans_mask.astype(bool), axis=(0,1)) for kmeans_mask in masks])
+    ranges = pd.DataFrame(maxs - mins, columns=["H", "S", "V"])
+
+    return centers, ranges, masks
 
 def get_spatial_metrics(mask):
     # scipy can perform the mean (center of mass), but not the standard deviation
