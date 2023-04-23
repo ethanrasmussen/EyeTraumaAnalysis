@@ -20,10 +20,10 @@ directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
 
-import EyeTraumaAnalysis
+import src.EyeTraumaAnalysis
 
 print(directory_path)
-importlib.reload(EyeTraumaAnalysis);
+importlib.reload(src.EyeTraumaAnalysis);
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -34,7 +34,7 @@ import cv2
 # In[3]:
 
 
-kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx", dtype={
+kmeans_labels = pd.read_excel("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx", dtype={
     "Correct 1":"Int64", # "Int64" is from pandas, unlike int64 and allows null
     "Correct 2":"Int64",
     "Correct 3":"Int64",
@@ -44,22 +44,22 @@ kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correc
 }, na_filter=False) # False na_filters make empty value for str column be "" instead of NaN
 
 
-# In[4]:
+# In[5]:
 
 
 all_metrics = []
 all_kmeans_masks = {}
 for ind, filename in enumerate(kmeans_labels["Filename"]):
-    img_bgr = skimage.io.imread(os.path.join("data/01_raw/",filename))
-    centers, ranges, res_bgr, kmeans_masks = EyeTraumaAnalysis.kmeans.create_kmeans(img_bgr)
-    metrics = EyeTraumaAnalysis.kmeans.get_kmeans_metrics(centers, ranges, kmeans_masks)
+    img_bgr = skimage.io.imread(os.path.join("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/01_raw/",filename))
+    centers, ranges, res_bgr, kmeans_masks = src.EyeTraumaAnalysis.kmeans.create_kmeans(img_bgr)
+    metrics = src.EyeTraumaAnalysis.kmeans.get_kmeans_metrics(centers, ranges, kmeans_masks)
     all_metrics.append(metrics)
     all_kmeans_masks[filename] = kmeans_masks
 
 all_metrics = pd.concat(all_metrics, keys=kmeans_labels["Filename"])
 
 
-# In[ ]:
+# In[6]:
 
 
 all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["median"])[["Ranks","Values"]]
@@ -91,7 +91,7 @@ clusters_preds = {}
 for ind, filename in enumerate(kmeans_labels["Filename"]):
     metrics = all_metrics.loc[filename]
     kmeans_masks = all_kmeans_masks[filename]
-    chosen = EyeTraumaAnalysis.kmeans.choose_kmeans_cluster(metrics)
+    chosen = src.EyeTraumaAnalysis.kmeans.choose_kmeans_cluster(metrics)
 
     # get combined masks of the clusters chosen. The .any() applies an OR so only a pixel needs to be in only one cluster
     # to be included in the combined mask
@@ -216,8 +216,14 @@ prediction_statistic_clusters = calculate_prediction_statistics_clusters(cluster
 prediction_statistic_clusters["jaccard_raw"].value_counts(sort=True, normalize=False)
 
 
-# In[80]:
+# In[12]:
 
 
 prediction_statistic_clusters["jaccard"].agg(["mean","median","std","min","max"])
+
+
+# In[ ]:
+
+
+
 

@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[3]:
+# In[2]:
 
 
 import os
@@ -39,7 +39,7 @@ import plotly
 
 # # Load metrics
 
-# In[7]:
+# In[3]:
 
 
 all_metrics = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_p4" + ".pkl")

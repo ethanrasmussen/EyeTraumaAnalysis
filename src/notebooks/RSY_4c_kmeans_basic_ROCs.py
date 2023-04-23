@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import os
@@ -28,39 +28,39 @@ directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
 
-import EyeTraumaAnalysis
-from EyeTraumaAnalysis import calculate_roc
+import src.EyeTraumaAnalysis
+from src.EyeTraumaAnalysis import calculate_roc
 
 
-# In[8]:
+# In[2]:
 
 
 os.getcwd()
 
 
-# In[9]:
+# In[3]:
 
 
-importlib.reload(EyeTraumaAnalysis);
+importlib.reload(src.EyeTraumaAnalysis);
 
 
 # # Load metrics
 
-# In[3]:
+# In[5]:
 
 
 # Load metrics
-all_metrics = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
-all_metrics_flat = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
-all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
+all_metrics = pd.read_pickle("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
+all_metrics_flat = pd.read_pickle("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
+all_metrics_agg = pd.read_pickle("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
 
 
 # # Test function for calculating roc metrics
 
-# In[4]:
+# In[6]:
 
 
-importlib.reload(EyeTraumaAnalysis.kmeans)
+importlib.reload(src.EyeTraumaAnalysis.kmeans)
 roc_df, auc, comparator = calculate_roc(all_metrics_flat["Labels-Value"],
                                         all_metrics_flat["Ranks-Color-Center-S"], true_value="True")
 auc, comparator
@@ -68,11 +68,10 @@ auc, comparator
 
 # # Prepare for plotting
 
-# In[6]:
+# In[7]:
 
 
-default_plotly_save_scale = 4
-notebook_name = "kmeans-basic-rocs"
+notebook_name = "4c_kmeans_rocs"
 
 def get_path_to_save(
         plot_props:dict=None, file_prefix="",
@@ -124,19 +123,20 @@ def save_plotly_figure(fig: plotly.graph_objs.Figure,
                        extensions=None
                        ):
     if scale is None:
-        scale = default_plotly_save_scale
+        scale = 4
     if extensions is None:
         extensions = ["html"]
         if not animated:
             # options = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json']
             extensions += ["png","pdf"]
-
+    extensions = ["html"] # override due to png saving error
     for extension in extensions:
         try:
             if extension in ["htm","html"]:
                 #fig.update_layout(title=dict(visible=False))
-                fig.write_html( get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension),
-                    full_html=True, include_plotlyjs="directory" )
+                # fig.write_html( get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension),
+                #     full_html=True, include_plotlyjs="directory" )
+                fig.write_html(f"C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/outputs/RSY_4/{title}.{extension}")
             else:
                 #if extension == "png":
                 #    fig.update_layout(title=dict(visible=False))
@@ -145,8 +145,88 @@ def save_plotly_figure(fig: plotly.graph_objs.Figure,
             import traceback
             traceback.print_exception(exc)
 
+# def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive-subsets/"):
+#     return
+    # fig.write_image(os.path.join(directory, title + ".png"))
+    # fig.write_html( os.path.join(directory, title + ".html"),
+    #                 full_html=True, include_plotlyjs="directory" )
 
-# In[10]:
+# default_plotly_save_scale = 4
+# notebook_name = "kmeans-basic-rocs"
+#
+# def get_path_to_save(
+#         plot_props:dict=None, file_prefix="",
+#         save_filename:str=None, save_in_subfolder:str=None, extension="jpg", dot=".", create_folder_if_necessary=True):
+#     replace_characters = {
+#         "$": "",
+#         "\\frac":"",
+#         "\\mathrm":"",
+#         "\\left(":"(",
+#         "\\right)":")",
+#         "\\left[":"[",
+#         "\\right]":"]",
+#         "\\": "",
+#         "/":"-",
+#         "{": "(",
+#         "}": ")",
+#         "<":"",
+#         ">":"",
+#         "?":"",
+#         "_":"",
+#         "^":"",
+#         "*":"",
+#         "!":"",
+#         ":":"-",
+#         "|":"-",
+#         ".":"_",
+#     }
+#     # define save_filename based on plot_props
+#     if save_filename is None:
+#         save_filename = "unnamed"
+#
+#     save_path = ["outputs", notebook_name,]
+#     if save_in_subfolder is not None:
+#         if isinstance(save_in_subfolder, (list, tuple, set, np.ndarray) ):
+#             save_path.append(**save_in_subfolder)
+#         else:  # should be a string then
+#             save_path.append(save_in_subfolder)
+#     save_path = os.path.join(*save_path)
+#
+#     if not os.path.exists(save_path) and create_folder_if_necessary:
+#         os.makedirs(save_path)
+#     return os.path.join(save_path, file_prefix+save_filename+dot+extension)
+#
+# def save_plotly_figure(fig: plotly.graph_objs.Figure,
+#                        title: str,
+#                        animated=False,
+#                        scale=None,
+#                        save_in_subfolder:str=None,
+#                        extensions=None
+#                        ):
+#     if scale is None:
+#         scale = default_plotly_save_scale
+#     if extensions is None:
+#         extensions = ["html"]
+#         if not animated:
+#             # options = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json']
+#             extensions += ["png","pdf"]
+#
+#     for extension in extensions:
+#         try:
+#             if extension in ["htm","html"]:
+#                 #fig.update_layout(title=dict(visible=False))
+#                 fig.write_html( get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension),
+#                     full_html=True, include_plotlyjs="directory" )
+#             else:
+#                 #if extension == "png":
+#                 #    fig.update_layout(title=dict(visible=False))
+#                 fig.write_image(get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension), scale=scale)
+#         except ValueError as exc:
+#             import traceback
+#             traceback.print_exception(exc)
+
+
+# In[8]:
 
 
 color_discrete_map = {
@@ -242,7 +322,7 @@ roc_hover_data = {
 plotly_template = "plotly_dark"  #"simple_white"
 
 
-# In[11]:
+# In[9]:
 
 
 def customize_roc_curve(fig: plotly.graph_objs.Figure, add_reference_line=True):
@@ -288,7 +368,7 @@ def customize_roc_curve(fig: plotly.graph_objs.Figure, add_reference_line=True):
     )
 
 
-# In[12]:
+# In[10]:
 
 
 def add_threshold_annotations(fig: plotly.graph_objs.Figure, roc_df, comparator: str, color=None):
@@ -322,10 +402,10 @@ def add_auc_annotation(fig: plotly.graph_objs.Figure, auc):
 
 # # Plot
 
-# In[14]:
+# In[11]:
 
 
-title = "HSV ROC curve - V rank"
+title = "HSV ROC curve - V rank - 3-24-2023"
 predictor_name = "Ranks-Color-Center-V"
 roc_df, auc, comparator = calculate_roc(all_metrics_flat["Labels-Value"],
                                         all_metrics_flat[predictor_name], true_value="True")
@@ -343,7 +423,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[16]:
+# In[12]:
 
 
 for title, predictor_name in zip(
@@ -364,7 +444,7 @@ for title, predictor_name in zip(
     save_plotly_figure(fig, title)
 
 
-# In[18]:
+# In[13]:
 
 
 for title, predictor_name in zip(
@@ -384,11 +464,11 @@ for title, predictor_name in zip(
     save_plotly_figure(fig, title)
 
 
-# In[19]:
+# In[14]:
 
 
 
-title = "HSV ROC Curve - HSV centers"
+title = "HSV ROC Curve - HSV centers - 3-24-2023"
 predictor_names = ["Values-Color-Center-H", "Values-Color-Center-S", "Values-Color-Center-V"]
 
 fig = go.Figure()
@@ -422,10 +502,10 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[20]:
+# In[15]:
 
 
-title = "HSV ROC Curve - HSV centers (rank)"
+title = "HSV ROC Curve - HSV centers (rank) - 3-24-2023"
 predictor_names = ["Ranks-Color-Center-H", "Ranks-Color-Center-S", "Ranks-Color-Center-V"]
 
 fig = go.Figure()
@@ -476,10 +556,10 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[21]:
+# In[16]:
 
 
-title = "Loc ROC Curve - xy value"
+title = "Loc ROC Curve - xy value - 3-24-2023"
 predictor_names = ["Values-Location-Mean-x", "Values-Location-Mean-y",
                    "Values-Location-SD-x", "Values-Location-SD-y"]
 
@@ -518,17 +598,17 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[352]:
+# In[17]:
 
 
 formula = "{}"
 formula.format(1), formula.format(2.0), formula.format(3.1), formula.format(3.14159265358), formula.format(10.1)
 
 
-# In[22]:
+# In[18]:
 
 
-title = "Loc ROC Curve - xy (rank)"
+title = "Loc ROC Curve - xy (rank) - 3-24-2023"
 predictor_names = ["Ranks-Location-Mean-x", "Ranks-Location-Mean-y",
                    "Ranks-Location-SD-x", "Ranks-Location-SD-y"]
 

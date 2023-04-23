@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[1]:
 
 
 import os
@@ -31,7 +31,7 @@ print(directory_path)
 import src.EyeTraumaAnalysis
 
 
-# In[6]:
+# In[2]:
 
 
 importlib.reload(src.EyeTraumaAnalysis);
@@ -61,29 +61,103 @@ with open("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" 
   data.to_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + "_p4" + ".pkl")
 
 
-# In[9]:
+# In[3]:
 
 
-# all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
-# all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
-# all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
-all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + "_p4" + ".pkl")
-all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + "_p4" + ".pkl")
-all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + "_p4" + ".pkl")
+all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
+all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
+all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
+# all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + "_p4" + ".pkl")
+# all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + "_p4" + ".pkl")
+# all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + "_p4" + ".pkl")
 
 
 # 
 
-# In[11]:
+# In[4]:
 
 
-def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive-subsets/"):
-    fig.write_image(os.path.join(directory, title + ".png"))
-    fig.write_html( os.path.join(directory, title + ".html"),
-                    full_html=True, include_plotlyjs="directory" )
+notebook_name = "4b_descriptive_subsets"
+
+def get_path_to_save(
+        plot_props:dict=None, file_prefix="",
+        save_filename:str=None, save_in_subfolder:str=None, extension="jpg", dot=".", create_folder_if_necessary=True):
+    replace_characters = {
+        "$": "",
+        "\\frac":"",
+        "\\mathrm":"",
+        "\\left(":"(",
+        "\\right)":")",
+        "\\left[":"[",
+        "\\right]":"]",
+        "\\": "",
+        "/":"-",
+        "{": "(",
+        "}": ")",
+        "<":"",
+        ">":"",
+        "?":"",
+        "_":"",
+        "^":"",
+        "*":"",
+        "!":"",
+        ":":"-",
+        "|":"-",
+        ".":"_",
+    }
+    # define save_filename based on plot_props
+    if save_filename is None:
+        save_filename = "unnamed"
+
+    save_path = ["outputs", notebook_name,]
+    if save_in_subfolder is not None:
+        if isinstance(save_in_subfolder, (list, tuple, set, np.ndarray) ):
+            save_path.append(**save_in_subfolder)
+        else:  # should be a string then
+            save_path.append(save_in_subfolder)
+    save_path = os.path.join(*save_path)
+
+    if not os.path.exists(save_path) and create_folder_if_necessary:
+        os.makedirs(save_path)
+    return os.path.join(save_path, file_prefix+save_filename+dot+extension)
+
+def save_plotly_figure(fig: plotly.graph_objs.Figure,
+                       title: str,
+                       animated=False,
+                       scale=None,
+                       save_in_subfolder:str=None,
+                       extensions=None
+                       ):
+    if scale is None:
+        scale = 4
+    if extensions is None:
+        extensions = ["html"]
+        if not animated:
+            # options = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json']
+            extensions += ["png","pdf"]
+    extensions = ["html"] # override due to png saving error
+    for extension in extensions:
+        try:
+            if extension in ["htm","html"]:
+                #fig.update_layout(title=dict(visible=False))
+                # fig.write_html( get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension),
+                #     full_html=True, include_plotlyjs="directory" )
+                fig.write_html(f"C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/outputs/RSY_4/{title}.{extension}")
+            else:
+                #if extension == "png":
+                #    fig.update_layout(title=dict(visible=False))
+                fig.write_image(get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension), scale=scale)
+        except ValueError as exc:
+            import traceback
+            traceback.print_exception(exc)
+
+# def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/outputs/kmeans-descriptive-subsets/"):
+#     fig.write_image(os.path.join(directory, title + ".png"))
+#     fig.write_html( os.path.join(directory, title + ".html"),
+#                     full_html=True, include_plotlyjs="directory" )
 
 
-# In[12]:
+# In[5]:
 
 
 color_discrete_map = {
@@ -180,7 +254,7 @@ plotly_template = "plotly_dark"  #"simple_white"
 
 # # Plot
 
-# In[13]:
+# In[6]:
 
 
 fig = px.histogram(all_metrics_flat, x="Values-Color-Center-H", marginal="box", opacity=0.6,
@@ -193,11 +267,11 @@ fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=
 fig.update_xaxes(matches=None)
 fig.for_each_xaxis(lambda axis: axis.update(showticklabels=True))
 fig.show()
-title = "HSV histogram with box plot- H val split at >=100"
+title = "HSV histogram with box plot- H val split at GTE 100 - 3-24-2023"
 save_plotly_figure(fig, title)
 
 
-# In[14]:
+# In[7]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -208,11 +282,11 @@ fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", o
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H rank split at V val>75"
+title = "HSV histogram with box plot- H rank split at V val GT 75 - 3-24-2023"
 save_plotly_figure(fig, title)
 
 
-# In[15]:
+# In[8]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -223,11 +297,11 @@ fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", o
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=4"
+title = "HSV histogram with box plot- H val split at V rank GTE 4 - 3-24-2023"
 save_plotly_figure(fig, title)
 
 
-# In[16]:
+# In[9]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -238,11 +312,11 @@ fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", o
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=5"
+title = "HSV histogram with box plot- H val split at V rank GTE 5 - 3-24-2023"
 save_plotly_figure(fig, title)
 
 
-# In[17]:
+# In[10]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -253,11 +327,11 @@ fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", o
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=6"
+title = "HSV histogram with box plot- H val split at V rank GTE 6 - 3-24-2023"
 save_plotly_figure(fig, title)
 
 
-# In[18]:
+# In[11]:
 
 
 fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -269,6 +343,12 @@ fig = px.histogram(all_metrics_flat, x="Ranks-Color-Center-H", marginal="box", o
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram- H val split at V >=75 and S >=75"
+title = "HSV histogram- H val split at V GTE 75 and S GTE 75 - 3-24-2023"
 save_plotly_figure(fig, title)
+
+
+# In[ ]:
+
+
+
 

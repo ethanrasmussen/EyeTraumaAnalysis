@@ -77,7 +77,7 @@ with open("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" 
   data.to_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + "_p4" + ".pkl")
 
 
-# In[5]:
+# In[3]:
 
 
 # metrics_AE = pd.read_pickle("../../data/03_first_25percent_metrics/metrics_AE" + "_p4" + ".pkl")
@@ -85,22 +85,96 @@ with open("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" 
 # metrics_LE = pd.read_pickle("../../data/03_first_25percent_metrics/metrics_LE" + "_p4" + ".pkl")
 # metrics_WE = pd.read_pickle("../../data/03_first_25percent_metrics/metrics_WE" + "_p4" + ".pkl")
 
-all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + "_p4" + ".pkl")
-all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + "_p4" + ".pkl")
-all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + "_p4" + ".pkl")
+all_metrics = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
+all_metrics_flat = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_flat" + ".pkl")
+all_metrics_agg = pd.read_pickle("../../data/03_first_25percent_metrics/color_and_spatial_metrics_agg" + ".pkl")
 
 
-# In[33]:
+# In[4]:
 
 
-def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive-subsets/"):
-    return
+notebook_name = "4b_racially_stratified"
+
+def get_path_to_save(
+        plot_props:dict=None, file_prefix="",
+        save_filename:str=None, save_in_subfolder:str=None, extension="jpg", dot=".", create_folder_if_necessary=True):
+    replace_characters = {
+        "$": "",
+        "\\frac":"",
+        "\\mathrm":"",
+        "\\left(":"(",
+        "\\right)":")",
+        "\\left[":"[",
+        "\\right]":"]",
+        "\\": "",
+        "/":"-",
+        "{": "(",
+        "}": ")",
+        "<":"",
+        ">":"",
+        "?":"",
+        "_":"",
+        "^":"",
+        "*":"",
+        "!":"",
+        ":":"-",
+        "|":"-",
+        ".":"_",
+    }
+    # define save_filename based on plot_props
+    if save_filename is None:
+        save_filename = "unnamed"
+
+    save_path = ["outputs", notebook_name,]
+    if save_in_subfolder is not None:
+        if isinstance(save_in_subfolder, (list, tuple, set, np.ndarray) ):
+            save_path.append(**save_in_subfolder)
+        else:  # should be a string then
+            save_path.append(save_in_subfolder)
+    save_path = os.path.join(*save_path)
+
+    if not os.path.exists(save_path) and create_folder_if_necessary:
+        os.makedirs(save_path)
+    return os.path.join(save_path, file_prefix+save_filename+dot+extension)
+
+def save_plotly_figure(fig: plotly.graph_objs.Figure,
+                       title: str,
+                       animated=False,
+                       scale=None,
+                       save_in_subfolder:str=None,
+                       extensions=None
+                       ):
+    if scale is None:
+        scale = 4
+    if extensions is None:
+        extensions = ["html"]
+        if not animated:
+            # options = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'json']
+            extensions += ["png","pdf"]
+    extensions = ["html"] # override due to png saving error
+    for extension in extensions:
+        try:
+            if extension in ["htm","html"]:
+                #fig.update_layout(title=dict(visible=False))
+                # fig.write_html( get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension),
+                #     full_html=True, include_plotlyjs="directory" )
+                fig.write_html(f"C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/outputs/RSY_4/{title}.{extension}")
+            else:
+                #if extension == "png":
+                #    fig.update_layout(title=dict(visible=False))
+                fig.write_image(get_path_to_save(save_filename=title, save_in_subfolder=save_in_subfolder, extension=extension), scale=scale)
+        except ValueError as exc:
+            import traceback
+            traceback.print_exception(exc)
+
+# def save_plotly_figure(fig: plotly.graph_objs.Figure, title: str, directory="outputs/kmeans-descriptive-subsets/"):
+#     return
     # fig.write_image(os.path.join(directory, title + ".png"))
     # fig.write_html( os.path.join(directory, title + ".html"),
     #                 full_html=True, include_plotlyjs="directory" )
 
 
-# In[7]:
+# In[5]:
 
 
 color_discrete_map = {
@@ -197,7 +271,7 @@ plotly_template = "plotly_dark"  #"simple_white"
 
 # ## Plotting: H rank split at V val > 75
 
-# In[34]:
+# In[10]:
 
 
 fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -208,12 +282,12 @@ fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H rank split at V val>75 (race: Asian)"
+title = "HSV histogram with box plot- H rank split at V val GT 75 (race - Asian) - 3-24-2023"
 print("Race: Asian")
 save_plotly_figure(fig, title)
 
 
-# In[35]:
+# In[11]:
 
 
 fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -224,12 +298,12 @@ fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H rank split at V val>75 (race: Black)"
+title = "HSV histogram with box plot- H rank split at V val GT 75 (race - Black) - 3-24-2023"
 print("Race: Black")
 save_plotly_figure(fig, title)
 
 
-# In[36]:
+# In[12]:
 
 
 fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -240,12 +314,12 @@ fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", margina
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H rank split at V val>75 (race: Latinx)"
+title = "HSV histogram with box plot- H rank split at V val GT 75 (race - Latinx) - 3-24-2023"
 print("Race: Latinx")
 save_plotly_figure(fig, title)
 
 
-# In[37]:
+# In[13]:
 
 
 fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -256,14 +330,14 @@ fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H rank split at V val>75 (race: White)"
+title = "HSV histogram with box plot- H rank split at V val GT 75 (race - White) - 3-24-2023"
 print("Race: White")
 save_plotly_figure(fig, title)
 
 
 # ## Plotting: H val split at >= 100
 
-# In[59]:
+# In[14]:
 
 
 fig = px.histogram(all_metrics_flat[0:270], x="Values-Color-Center-H", marginal="box", opacity=0.6,
@@ -277,12 +351,12 @@ fig.update_xaxes(matches=None)
 fig.for_each_xaxis(lambda axis: axis.update(showticklabels=True))
 fig.for_each_yaxis(lambda axis: axis.update(showticklabels=True))
 fig.show()
-title = "HSV histogram with box plot- H val split at >=100 (race: Asian)"
+title = "HSV histogram with box plot- H val split at GTE 100 (race - Asian) - 3-24-2023"
 print("Race: Asian")
 save_plotly_figure(fig, title)
 
 
-# In[61]:
+# In[16]:
 
 
 fig = px.histogram(all_metrics_flat[271:740], x="Values-Color-Center-H", marginal="box", opacity=0.6,
@@ -295,12 +369,12 @@ fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=
 fig.update_xaxes(matches=None)
 fig.for_each_xaxis(lambda axis: axis.update(showticklabels=True))
 fig.show()
-title = "HSV histogram with box plot- H val split at >=100 (race: Black)"
+title = "HSV histogram with box plot- H val split at GTE 100 (race - Black) - 3-24-2023"
 print("Race: Black")
 save_plotly_figure(fig, title)
 
 
-# In[62]:
+# In[17]:
 
 
 fig = px.histogram(all_metrics_flat[741:1000], x="Values-Color-Center-H", marginal="box", opacity=0.6,
@@ -313,12 +387,12 @@ fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=
 fig.update_xaxes(matches=None)
 fig.for_each_xaxis(lambda axis: axis.update(showticklabels=True))
 fig.show()
-title = "HSV histogram with box plot- H val split at >=100 (race: Latinx)"
+title = "HSV histogram with box plot- H val split at GTE 100 (race - Latinx) - 3-24-2023"
 print("Race: Latinx")
 save_plotly_figure(fig, title)
 
 
-# In[63]:
+# In[18]:
 
 
 fig = px.histogram(all_metrics_flat[1001:], x="Values-Color-Center-H", marginal="box", opacity=0.6,
@@ -331,14 +405,14 @@ fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=
 fig.update_xaxes(matches=None)
 fig.for_each_xaxis(lambda axis: axis.update(showticklabels=True))
 fig.show()
-title = "HSV histogram with box plot- H val split at >=100 (race: White)"
+title = "HSV histogram with box plot- H val split at GTE 100 (race - White) - 3-24-2023"
 print("Race: White")
 save_plotly_figure(fig, title)
 
 
 # ## Plotting: H rank split at rank >= 4
 
-# In[42]:
+# In[19]:
 
 
 fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -349,12 +423,12 @@ fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=4 (race: Asian)"
+title = "HSV histogram with box plot- H val split at V rank GTE 4 (race - Asian) - 3-24-2023"
 print("Race: Asian")
 save_plotly_figure(fig, title)
 
 
-# In[43]:
+# In[20]:
 
 
 fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -365,12 +439,12 @@ fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=4 (race: Black)"
+title = "HSV histogram with box plot- H val split at V rank GTE 4 (race - Black) - 3-24-2023"
 print("Race: Black")
 save_plotly_figure(fig, title)
 
 
-# In[44]:
+# In[21]:
 
 
 fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -381,12 +455,12 @@ fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", margina
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=4 (race: Latinx)"
+title = "HSV histogram with box plot- H val split at V rank GTE 4 (race - Latinx) - 3-24-2023"
 print("Race: Latinx")
 save_plotly_figure(fig, title)
 
 
-# In[45]:
+# In[22]:
 
 
 fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -397,14 +471,14 @@ fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=4 (race: White)"
+title = "HSV histogram with box plot- H val split at V rank GTE 4 (race - White) - 3-24-2023"
 print("Race: White")
 save_plotly_figure(fig, title)
 
 
 # ## Plotting: H rank split at V rank >= 5
 
-# In[46]:
+# In[23]:
 
 
 fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -415,12 +489,12 @@ fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=5 (race: Asian)"
+title = "HSV histogram with box plot- H val split at V rank GTE 5 (race - Asian) - 3-24-2023"
 print("Race: Asian")
 save_plotly_figure(fig, title)
 
 
-# In[47]:
+# In[24]:
 
 
 fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -431,12 +505,12 @@ fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=5 (race: Black)"
+title = "HSV histogram with box plot- H val split at V rank GTE 5 (race - Black) - 3-24-2023"
 print("Race: Black")
 save_plotly_figure(fig, title)
 
 
-# In[48]:
+# In[25]:
 
 
 fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -447,12 +521,12 @@ fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", margina
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=5 (race: Latinx)"
+title = "HSV histogram with box plot- H val split at V rank GTE 5 (race - Latinx) - 3-24-2023"
 print("Race: Latinx")
 save_plotly_figure(fig, title)
 
 
-# In[49]:
+# In[26]:
 
 
 fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -463,14 +537,14 @@ fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=5 (race: White)"
+title = "HSV histogram with box plot- H val split at V rank GTE 5 (race - White) - 3-24-2023"
 print("Race: White")
 save_plotly_figure(fig, title)
 
 
 # ## Plotting: H rank split at V rank >= 6
 
-# In[50]:
+# In[27]:
 
 
 fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -481,12 +555,12 @@ fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=6 (race: Asian)"
+title = "HSV histogram with box plot- H val split at V rank GTE 6 (race - Asian) - 3-24-2023"
 print("Race: Asian")
 save_plotly_figure(fig, title)
 
 
-# In[51]:
+# In[28]:
 
 
 fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -497,12 +571,12 @@ fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=6 (race: Black)"
+title = "HSV histogram with box plot- H val split at V rank GTE 6 (race - Black) - 3-24-2023"
 print("Race: Black")
 save_plotly_figure(fig, title)
 
 
-# In[52]:
+# In[29]:
 
 
 fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -513,12 +587,12 @@ fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", margina
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=6 (race: Latinx)"
+title = "HSV histogram with box plot- H val split at V rank GTE 6 (race - Latinx) - 3-24-2023"
 print("Race: Latinx")
 save_plotly_figure(fig, title)
 
 
-# In[53]:
+# In[30]:
 
 
 fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -529,14 +603,14 @@ fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram with box plot- H val split at V rank>=6 (race: White)"
+title = "HSV histogram with box plot- H val split at V rank GTE 6 (race - White) - 3-24-2023"
 print("Race: White")
 save_plotly_figure(fig, title)
 
 
 # ## Plotting: H rank split at V >= 75 and S >= 75
 
-# In[54]:
+# In[31]:
 
 
 fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -548,12 +622,12 @@ fig = px.histogram(all_metrics_flat[0:270], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram- H val split at V >=75 and S >=75 (race: Asian)"
+title = "HSV histogram- H val split at V GTE 75 and S GTE 75 (race - Asian) - 3-24-2023"
 print("Race: Asian")
 save_plotly_figure(fig, title)
 
 
-# In[55]:
+# In[32]:
 
 
 fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -565,12 +639,12 @@ fig = px.histogram(all_metrics_flat[271:740], x="Ranks-Color-Center-H", marginal
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram- H val split at V >=75 and S >=75 (race: Black)"
+title = "HSV histogram- H val split at V GTE 75 and S GTE 75 (race - Black) - 3-24-2023"
 print("Race: Black")
 save_plotly_figure(fig, title)
 
 
-# In[56]:
+# In[33]:
 
 
 fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -582,12 +656,12 @@ fig = px.histogram(all_metrics_flat[741:1000], x="Ranks-Color-Center-H", margina
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram- H val split at V >=75 and S >=75 (race: Latinx)"
+title = "HSV histogram- H val split at V GTE 75 and S GTE 75 (race - Latinx) - 3-24-2023"
 print("Race: Latinx")
 save_plotly_figure(fig, title)
 
 
-# In[57]:
+# In[34]:
 
 
 fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="box", opacity=0.6,
@@ -599,7 +673,7 @@ fig = px.histogram(all_metrics_flat[1001:], x="Ranks-Color-Center-H", marginal="
 fig.update_layout(bargap=0.04)
 fig.update_layout(font=dict(family="Arial",size=16,), margin=dict(l=20, r=20, t=20, b=20))
 fig.show()
-title = "HSV histogram- H val split at V >=75 and S >=75 (race: White)"
+title = "HSV histogram- H val split at V GTE 75 and S GTE 75 (race - White) - 3-24-2023"
 print("Race: White")
 save_plotly_figure(fig, title)
 
