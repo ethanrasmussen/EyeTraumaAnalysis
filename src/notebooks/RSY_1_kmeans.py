@@ -1,13 +1,22 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# # Imports
+
 # In[2]:
 
 
 import os
 import sys
 import importlib
-os.chdir("../..")
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+import matplotlib as mpl
+import cv2
+
+if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
+    os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
@@ -19,16 +28,6 @@ import EyeTraumaAnalysis
 
 
 importlib.reload(EyeTraumaAnalysis);
-
-
-# In[4]:
-
-
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-import matplotlib as mpl
-import cv2
 
 
 # In[51]:
@@ -71,12 +70,6 @@ plt.imshow(target1)
 
 
 
-# In[89]:
-
-
-
-
-
 # In[104]:
 
 
@@ -102,12 +95,6 @@ res_bgr = cv2.cvtColor(res_hsv2, cv2.COLOR_HSV2BGR)
 
 
 centers
-
-
-# In[107]:
-
-
-
 
 
 # In[110]:
@@ -184,32 +171,8 @@ cent_x = np.average(mass_x)
 cent_y = np.average(mass_y)
 
 
-# In[ ]:
-
-
-np.average(mass_x
-
-
 # In[130]:
 
 
 cent_x, cent_y
-
-
-# In[131]:
-
-
-kmeans_thresholds[0]
-
-
-# In[132]:
-
-
-np.max(kmeans_thresholds[0])
-
-
-# In[ ]:
-
-
-
 

@@ -1,34 +1,44 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# # Imports
+
+# In[14]:
 
 
 import os
 import sys
 import importlib
+import json
+import uuid
 
-# !py -m pip install scipy
-# !py -m pip install matplotlib
-# !py -m pip install opencv-python
-# !py -m pip install plotly
-# !py -m pip install pandas
-# !py -m pip install numpy
-
+import numpy as np
+import pandas as pd
 import scipy.ndimage as snd
+import skimage
+import cv2
+from matplotlib import pyplot as plt
+import matplotlib as mpl
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly
 
-os.chdir("../..")
+
+# !py -m pip install numpy
+# !py -m pip install pandas
+# !py -m pip install scipy
+# !py -m pip install opencv-python
+# !py -m pip install matplotlib
+# !py -m pip install plotly
+
+if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
+    os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
+print(directory_path)
 
 import EyeTraumaAnalysis
-
-
-# In[ ]:
-
-
-print(directory_path)
 
 
 # In[ ]:
@@ -37,36 +47,9 @@ print(directory_path)
 importlib.reload(EyeTraumaAnalysis);
 
 
-# In[ ]:
+# # Helper and testing functions
 
-
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-import matplotlib as mpl
-import cv2
-
-
-# In[ ]:
-
-
-# images = ["10030.jpg", "10031.jpg", "10032.jpg", "10033.jpg", "10034.jpg", "10035.jpg", "10036.jpg", "10037.jpg", "10038.jpg", "10039.jpg", "10040.jpg", "10041.jpg", "10042.jpg"]
-
-
-# In[ ]:
-
-
-# images = os.listdir('./data/01_raw/Ergonautus/Full Dataset/')
-images = os.listdir('C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/01_raw/Ergonautus/Full Dataset/')
-
-
-# In[ ]:
-
-
-images[0]
-
-
-# In[ ]:
+# In[7]:
 
 
 def get_spatial_metrics(mask):
@@ -83,84 +66,11 @@ def get_spatial_metrics(mask):
     return to_return
 
 
-# In[ ]:
-
-
-### Create K means clusters and masks
-image = EyeTraumaAnalysis.Image("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/01_raw/11000.jpg")
-img_bgr = image.img
-img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-Z_hsv = img_hsv.reshape((-1,3))
-# convert to np.float32
-Z_hsv = np.float32(Z_hsv)
-# define criteria, number of clusters(K) and apply kmeans()
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-K = 10
-ret,label,centers=cv2.kmeans(Z_hsv,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
-# Now convert back into uint8, and make original image
-centers = np.uint8(centers)
-res_hsv = centers[label.flatten()]
-res_hsv2 = res_hsv.reshape(img_hsv.shape)
-res_bgr = cv2.cvtColor(res_hsv2, cv2.COLOR_HSV2BGR)
-# res2 = cv2.cvtColor(res2, cv2.COLOR_RGB2GRAY)
-
-
-# sort centers by HSV "value" - aka sort by grayscale
-centers_sorted = centers[centers[:, 2].argsort()]
-
-kmeans_thresholds = []
-for ind in range(K):
-    kmeans_thresholds.append(cv2.inRange(res_hsv2,centers_sorted[ind],centers_sorted[ind]))
-
-summed_image = np.zeros(kmeans_thresholds[0].shape)
-for ind in range(K):
-    # summed_image += int(ind/K*255) * kmeans_thresholds[ind]
-    summed_image += int(ind * 25) * kmeans_thresholds[ind]
-centers_indices = centers_sorted.argsort(axis=0)   # sorts each column separately
-
-
-# In[ ]:
-
-
-summed_image
-
-
-# In[ ]:
-
-
-plt.imsave("test.png", summed_image)
-
-
-# In[ ]:
-
-
-### Clustered View ### <-- for individual image use
-fig, axs = plt.subplots(2, 2, figsize=(12,6))
-im0=axs.flat[0].imshow(img_bgr)
-im1=axs.flat[1].imshow(res_bgr)
-im2=axs.flat[2].imshow(summed_image, cmap="gray")
-im3=axs.flat[3].imshow(summed_image, cmap="terrain")
-plt.colorbar(im3,ax=axs.flat[3], shrink=0.8)
-
-
-# In[ ]:
-
-
-get_spatial_metrics(kmeans_thresholds[0])
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
+# In[10]:
 
 
 ### Per Cluster Masking ### <-- for individual image use
-
-def draw_cluster_masking(img):
+def draw_cluster_masking(img, K=10):
     row_ct = int(np.sqrt(K))
     col_ct = int(np.ceil(K/row_ct))
     fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
@@ -195,7 +105,7 @@ def draw_cluster_masking(img):
             axs.flat[ind].axis("off")
 
 
-# In[ ]:
+# In[11]:
 
 
 def draw_separate_clusters(img, filename=None, labelled=True, K_val=10):
@@ -249,7 +159,7 @@ def draw_separate_clusters(img, filename=None, labelled=True, K_val=10):
         # plt.clf()
 
 
-# In[ ]:
+# In[12]:
 
 
 def reverse_clustered_image(image_path, K=10):
@@ -271,6 +181,8 @@ def reverse_clustered_image(image_path, K=10):
 
 np.unique(reverse_clustered_image("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/all_clusters_indicated/000.png")[0])
 
+
+# #  Create clusters
 
 # In[ ]:
 
@@ -312,10 +224,10 @@ summed_image
 draw_cluster_masking(image.img)
 
 
-# In[ ]:
+# In[13]:
 
 
-image = EyeTraumaAnalysis.Image("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/01_raw/11000.jpg")
+image = EyeTraumaAnalysis.Image("data/01_raw/11000.jpg")
 draw_separate_clusters(image.img, filename=None)
 
 
@@ -325,11 +237,10 @@ draw_separate_clusters(image.img, filename=None)
 draw_separate_clusters(image.img, filename=None, labelled=False)
 
 
-# In[ ]:
+# In[18]:
 
 
-draw_separate_clusters(EyeTraumaAnalysis.Image("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/01_raw/Ergonautus/Full Dataset/000.PNG").img,
-                       filename="000",
+draw_separate_clusters(image.img,
                        labelled=True)
 
 

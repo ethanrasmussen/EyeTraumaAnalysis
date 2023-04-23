@@ -10,11 +10,19 @@ import os
 import sys
 import importlib
 import json
+import uuid
+
 import numpy as np
 import pandas as pd
 import scipy.ndimage as snd
 import skimage
-import uuid
+import cv2
+from matplotlib import pyplot as plt
+import matplotlib as mpl
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly
+
 
 if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
     os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
@@ -26,15 +34,6 @@ import src.EyeTraumaAnalysis
 
 print(directory_path)
 importlib.reload(src.EyeTraumaAnalysis);
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-import matplotlib as mpl
-import cv2
-
-import plotly.express as px
-import plotly.graph_objects as go
-import plotly
 
 
 # # Load metrics
