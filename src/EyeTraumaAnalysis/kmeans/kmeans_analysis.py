@@ -9,41 +9,51 @@ import src.EyeTraumaAnalysis
 
 
 def create_kmeans(img_bgr, K=10):  # K is number of clusters
-    #np.all(skimage.io.imread("data/01_raw/14579.png") == skimage.io.imread(data_row.row_data))
     img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    Z_hsv = img_hsv.reshape((-1,3))
-    # convert to np.float32
+    Z_hsv = img_hsv.reshape((-1,3))  # flatten shape part, but keep color dimension
+    # Convert to np.float32
     Z_hsv = np.float32(Z_hsv)
-    # define criteria, number of clusters(K) and apply kmeans()
+
+    # Define criteria, arguments, and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    ret,label,centers=cv2.kmeans(Z_hsv,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+    attempts = 10
+    compactness, labels, centers_hsv = cv2.kmeans(Z_hsv,K,None, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
+
     # Now convert back into uint8, and make original image
-    centers = np.uint8(centers)
-    res_hsv = centers[label.flatten()]
-    res_hsv2 = res_hsv.reshape(img_hsv.shape)
-    res_bgr = cv2.cvtColor(res_hsv2, cv2.COLOR_HSV2BGR)
+    centers_hsv = np.uint8(centers_hsv)
+    img_hsv_flat = centers_hsv[labels.flatten()]   # shouldn't need to flatten
+    res_hsv = img_hsv_flat.reshape(img_hsv.shape)
+    res_bgr = cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR)
     # res2 = cv2.cvtColor(res2, cv2.COLOR_RGB2GRAY)
 
-
     # sort centers by HSV "value" - aka sort by grayscale
-    centers = centers[centers[:, 2].argsort()]
-
+    centers_hsv = centers_hsv[centers_hsv[:, 2].argsort()]
     #centers_indices = np.argsort(centers, axis=0)   # sorts each column separately
 
     kmeans_masks = []
     for ind in range(K):
         # Can use opencv in range or kmeans
-        #kmeans_masks.append(cv2.inRange(res_hsv2, centers[ind], centers[ind]))
-        kmeans_masks.append( np.all(res_hsv2 == centers[ind], axis=-1) )
-        #kmeans_masks.append( res_hsv2==centers[ind])
+        #kmeans_masks.append(cv2.inRange(res_hsv, centers[ind], centers[ind]))
+        kmeans_masks.append( np.all(res_hsv == centers_hsv[ind], axis=-1) )
+        #kmeans_masks.append( res_hsv==centers[ind])
     kmeans_masks = np.array(kmeans_masks)
 
-    # can't make centers a DataFrame until now since needed numpy for opencv in range or numpy comparison
-    centers = pd.DataFrame(centers, columns=["H","S","V"])
-    mins = np.array([np.min(img_hsv[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
-    maxs = np.max([np.min(img_hsv[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
-    ranges = pd.DataFrame(maxs - mins, columns=["H","S","V"])
-    return centers, ranges, res_bgr, kmeans_masks
+    # Couldn't make centers a DataFrame until now since needed numpy for opencv inRange or numpy comparison
+    centers_hsv = pd.DataFrame(centers_hsv, columns=["H","S","V"])
+    mins_hsv = np.array([np.min(img_hsv[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
+    maxs_hsv = np.max([np.min(img_hsv[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
+    ranges_hsv = pd.DataFrame(maxs_hsv - mins_hsv, columns=["H","S","V"])
+    return centers_hsv, ranges_hsv, res_bgr, kmeans_masks
+
+
+def get_masked_sums(masks:np.array):
+    K = len(masks)
+    interval = int(255 / K)
+    masks_summed = np.zeros(masks[0].shape)
+    for ind in range(K):
+        masks_summed += int(ind * interval) * masks[ind]
+    return masks_summed
+
 
 def reverse_clustered_image(image_path, K=10):
     # Load the image
@@ -90,6 +100,7 @@ def reverse_clustered_image(image_path, K=10):
 
     return centers, ranges, masks
 
+
 def get_spatial_metrics(mask):
     # scipy can perform the mean (center of mass), but not the standard deviation
     # spatial_means = snd.center_of_mass(mask)
@@ -123,6 +134,7 @@ def get_kmeans_metrics(centers, ranges, kmeans_masks):
     all_metrics_ranks = np.argsort(all_metrics, axis=0) + 1
 
     return pd.concat([all_metrics, all_metrics_ranks], axis=1, keys=["Values","Ranks"])
+
 
 def choose_kmeans_cluster(metrics):
     metrics = metrics.copy()
