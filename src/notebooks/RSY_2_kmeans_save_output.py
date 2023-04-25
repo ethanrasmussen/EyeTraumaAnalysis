@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[14]:
+# In[1]:
 
 
 import os
@@ -47,29 +47,14 @@ import EyeTraumaAnalysis
 importlib.reload(EyeTraumaAnalysis);
 
 
-# # Helper and testing functions
-
-# In[7]:
-
-
-def get_spatial_metrics(mask):
-    # scipy can perform the mean (center of mass), but not the standard deviation
-    # spatial_means = snd.center_of_mass(mask)
-    x = np.linspace(0, 1, mask.shape[1])
-    y = np.linspace(0, 1, mask.shape[0])
-    xgrid, ygrid = np.meshgrid(x, y)
-    grids = {"x": xgrid, "y":ygrid}
-    to_return = {"x":{}, "y":{}}
-    for ind, grid in grids.items():
-        to_return[ind]["mean"] = np.mean(grids[ind], where=mask.astype(bool))
-        to_return[ind]["sd"] = np.std(grids[ind], where=mask.astype(bool))
-    return to_return
-
+# # Unused testing functions
 
 # In[10]:
 
 
 ### Per Cluster Masking ### <-- for individual image use
+#image = EyeTraumaAnalysis.Image("data/01_raw/11000.jpg")
+#draw_cluster_masking(image.img)
 def draw_cluster_masking(img, K=10):
     row_ct = int(np.sqrt(K))
     col_ct = int(np.ceil(K/row_ct))
@@ -80,7 +65,7 @@ def draw_cluster_masking(img, K=10):
             target1 = img.copy()
             target1[kmeans_thresholds[ind].astype(bool)] = [127,255,127,255]
             axs.flat[ind].imshow(target1)
-            spatial_metrics = get_spatial_metrics(kmeans_thresholds[ind])
+            spatial_metrics = EyeTraumaAnalysis.get_spatial_metrics(kmeans_thresholds[ind])
             hsv_rank = centers_indices[ind]
             hsv_center = centers_sorted[ind]
             # Draw left title
@@ -108,6 +93,8 @@ def draw_cluster_masking(img, K=10):
 # In[11]:
 
 
+#image = EyeTraumaAnalysis.Image("data/01_raw/11000.jpg")
+#draw_separate_clusters(image.img, filename=None)
 def draw_separate_clusters(img, filename=None, labelled=True, K_val=10):
     img_bgr = image.img
     img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
@@ -132,7 +119,7 @@ def draw_separate_clusters(img, filename=None, labelled=True, K_val=10):
         target = img.copy()
         # target[kmeans_thresholds[i].astype(bool)] = [127,255,127,255]
         target[np.where(kmeans_thresholds[i])] = [127,255,127,255]
-        spatial_metrics = get_spatial_metrics(kmeans_thresholds[i])
+        spatial_metrics = EyeTraumaAnalysis.get_spatial_metrics(kmeans_thresholds[i])
         hsv_rank, hsv_center = centers_indices[i], centers_sorted[i]
         # generate plot
         if labelled:
@@ -159,136 +146,231 @@ def draw_separate_clusters(img, filename=None, labelled=True, K_val=10):
         # plt.clf()
 
 
-# In[12]:
-
-
-def reverse_clustered_image(image_path, K=10):
-    # Load the image
-    summed_image = plt.imread(image_path)
-
-    # Split the image into its component masks
-    masks = []
-    for ind in range(K):
-        mask = np.zeros(summed_image.shape[:2], dtype=np.uint8)
-        mask[summed_image[:,:,0] == ind*25] = 255
-        masks.append(mask)
-
-    return masks
-
-
-# In[ ]:
-
-
-np.unique(reverse_clustered_image("C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/all_clusters_indicated/000.png")[0])
-
-
 # #  Create clusters
 
-# In[ ]:
+# In[37]:
 
 
-image = EyeTraumaAnalysis.Image(f"data/01_raw/Ergonautus/Full Dataset/000.png")
-K = 10
-## Clustered View
+img_file_num = 14000
+image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
+img_bgr = image.img
+img_hsv = cv2.cvtColor(np.float32(img_bgr)/255.0, cv2.COLOR_BGR2HSV)  # needs to be float32, not the default float64
+centers, ranges, res_hsv, kmeans_masks = EyeTraumaAnalysis.create_kmeans(img_hsv)
+res_bgr = (cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR))
+masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
+
+plt.imshow(img_hsv)
+
+
+# In[300]:
+
+
+def create_kmeans(img, K=10, colorspace=None):  #
+    """
+    K is number of clusters
+    colorspace doesn't change the actual arrays, just the columns names for the pandas dataframe outputted
+    """
+    channels = img.shape[-1]
+    if colorspace is None:
+        if channels==3:
+            colorspace = "HSV"
+        elif channels==4:
+            colorspace = "BGRA"
+        else:
+            colorspace = "X" * channels
+
+    img_linear = img.reshape((-1,channels))  # flatten shape part, but keep color dimension
+    # NOTE: If you do cv2.cvtColor(.) to HSV on floats, the return HSV is from (0-360,0-1,0-1)
+    # If you do it on uint8s (aka unsigned integers), they will be 0-255 just like the input
+    # If you just do np.float32(.) or .astype(.) like below, then the original values are maintained
+    # docs: https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html#color_convert_rgb_hsv
+    img_linear = np.float32(img_linear)  # kmeans requires float32
+
+    # Define criteria, arguments, and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    attempts = 10
+    compactness, labels, centers = cv2.kmeans(img_linear,K,None, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
+
+    # Now convert back into uint8 (if was uint8 originally), and make original image dimensions
+    if img.dtype == "uint8":  # uint8 is 0-255 (unsigned 8 bit integer)
+        centers = np.uint8(centers)
+    res_img_flat = centers[labels.flatten()]   # shouldn't need to flatten as should already by x by 1
+    res_img = res_img_flat.reshape(img.shape)
+    labels = labels.reshape(img.shape[:2])
+
+    # Sort centers by HSV "value" - aka sort by grayscale
+    if colorspace.upper() in ["HSV"]:
+        centers = centers[centers[:, 2].argsort()]
+        #centers_indices = np.argsort(centers, axis=0)   # sorts each column separately
+    elif colorspace.upper() in ["RGB","RGBA","BGR","BGRA"]:
+        v = np.max(centers[:, :3], axis=1)  # the :3 is to remove an alpha channel if it exists
+        centers = centers[v.argsort()]
+
+    kmeans_masks = []
+    for ind in range(K):
+        # Can use opencv inRange or kmeans
+        #kmeans_masks.append(cv2.inRange(res_img, centers[ind], centers[ind]))
+        #kmeans_masks.append( np.all(res_img == centers[ind], axis=-1) )
+        #kmeans_masks.append( res_img==centers[ind])
+        # Below version works for floats as well
+        kmeans_masks.append( labels == ind )
+    kmeans_masks = np.array(kmeans_masks)
+
+    # Couldn't make centers a DataFrame until now since needed numpy for opencv inRange or numpy comparison
+    centers = pd.DataFrame(centers, columns=list(colorspace))   # list(.) converts "HSV" to ["H","S","V"]
+    mins = pd.DataFrame([np.min(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks], columns=list(colorspace))
+    maxs = pd.DataFrame([np.min(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks], columns=list(colorspace))
+    clusters = pd.concat([centers,mins,maxs], axis=1, keys=["center","min","max"])
+    clusters[("ct","#")] = np.sum(kmeans_masks, axis=(1,2))
+    clusters[("ct","%")] = clusters[("ct","#")]/np.sum(clusters[("ct","#")])
+    return centers, kmeans_masks, res_img, clusters
+
+
+# In[228]:
+
+
+def hsv_float32_to_uint8(img):
+    """This converts from (0-360, 0-1, 0-1) range to (0-180, 0-255, 0-255) range
+    """
+    # NOTE: If you do cv2.cvtColor(.) to HSV on floats, the return HSV is from (0-360,0-1,0-1)
+    # If you do it on uint8s (aka unsigned integers), they will be (0-180, 0-255, 0-255) just like the input
+    # If you just do np.float32(.) or .astype(.) like below, then the original values are maintained
+    # docs: https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html#color_convert_rgb_hsv
+    img = img.copy()
+    img[...,0] = img[...,0] *180/360   # H
+    img[...,1] = img[...,1] *255   # S
+    img[...,2] = img[...,2] *255   # V
+    img = np.uint8(img)
+    return img
+
+def hsv_uint8_to_float32(img):
+    """This converts from (0-180, 0-255, 0-255) range to (0-360, 0-1, 0-1) range
+    """
+    # NOTE: If you do cv2.cvtColor(.) to HSV on floats, the return HSV is from (0-360,0-1,0-1)
+    # If you do it on uint8s (aka unsigned integers), they will be (0-180, 0-255, 0-255) just like the input
+    # If you just do np.float32(.) or .astype(.) like below, then the original values are maintained
+    # docs: https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html#color_convert_rgb_hsv
+    img = np.float32(img.copy())
+    img[...,0] = img[...,0] *360/180   # H
+    img[...,1] = img[...,1] /255   # S
+    img[...,2] = img[...,2] /255   # V
+    return img
+
+
+# # Run on HSV uint8
+
+# In[311]:
+
+
+img_file_num = 14000
+image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
 img_bgr = image.img
 img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-Z_hsv = img_hsv.reshape((-1,3))
-Z_hsv = np.float32(Z_hsv)
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-ret,label,centers=cv2.kmeans(Z_hsv,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
-centers = np.uint8(centers)
-res_hsv = centers[label.flatten()]
-res_hsv2 = res_hsv.reshape(img_hsv.shape)
-res_bgr = cv2.cvtColor(res_hsv2, cv2.COLOR_HSV2BGR)
-centers_sorted = centers[centers[:, 2].argsort()]
-kmeans_thresholds = []
-for ind in range(K):
-    kmeans_thresholds.append(cv2.inRange(res_hsv2,centers_sorted[ind],centers_sorted[ind]))
-# center indices
-centers_indices = centers_sorted.argsort(axis=0)
-##
-summed_image = np.zeros(kmeans_thresholds[0].shape)
-for ind in range(K):
-    summed_image += int(ind * 25) * kmeans_thresholds[ind]
+centers, kmeans_masks, res_img, clusters = create_kmeans(img_hsv)
+res_bgr = np.uint8(cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR))
+masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
+
+plt.imshow(res_bgr)
+with pd.option_context("display.precision", 3, "display.width",100):
+    print(clusters)
 
 
-# In[ ]:
+# # Run on HSV float32
+
+# In[306]:
 
 
-summed_image
+img_file_num = 14000
+image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
+img_bgr = image.img
+# HSV floats are from (0-360,0-1,0-1) while uint8s are 0-255 for all channels
+img_hsv = cv2.cvtColor(np.float32(img_bgr), cv2.COLOR_BGR2HSV)  # needs to be float32, not the default float64
+centers, kmeans_masks, res_img, clusters = create_kmeans(img_hsv)
+res_bgr = np.uint8(cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR))
+masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
+plt.imshow(res_bgr)
+with pd.option_context("display.precision", 3, "display.width",100):
+    print(clusters)
 
 
-# In[ ]:
+# # Run on BGR uint8
+
+# In[312]:
 
 
-draw_cluster_masking(image.img)
+img_file_num = 14000
+image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
+img_bgr = image.img
+centers, kmeans_masks, res_img, clusters = create_kmeans(img_bgr)
+clusters[("center","V")] = np.max(centers[["B","G","R"]], axis=1)
+clusters = clusters.sort_values(by=("center","V"))
+masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
+plt.imshow(res_bgr)
+with pd.option_context("display.precision", 3, "display.width",100):
+    print(clusters)
 
 
-# In[13]:
+# # Run on old version of function (on hsv uint8)
+
+# In[314]:
 
 
-image = EyeTraumaAnalysis.Image("data/01_raw/11000.jpg")
-draw_separate_clusters(image.img, filename=None)
+img_file_num = 14000
+image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
+img_bgr = image.img
+# HSV floats are from (0-360,0-1,0-1) while uint8s are 0-255 for all channels
+img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)  # needs to be float32, not the default float64
+centers, ranges, res_hsv, kmeans_masks = EyeTraumaAnalysis.kmeans.create_kmeans(img_hsv)
+masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
+res_bgr = cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR)
+plt.imshow(res_bgr)
+
+centers["ct"] = np.sum(kmeans_masks, axis=(1,2))
+centers["%"] = centers["ct"] / centers["ct"].sum()
+
+print(centers)
 
 
-# In[ ]:
+# In[357]:
 
 
-draw_separate_clusters(image.img, filename=None, labelled=False)
+unique_vals = np.unique(masks_summed)
+bounds = np.arange(0,255,25)-12.5
+
+fig, axs = plt.subplots(2, 2, figsize=(12,6))
+im0=axs.flat[0].imshow(img_bgr)
+im1=axs.flat[1].imshow(res_bgr)
+im2=axs.flat[2].imshow(masks_summed, cmap="gray")
+im3=axs.flat[3].imshow(masks_summed, cmap="terrain")
+
+cmap2 = mpl.cm.gray
+norm2 = mpl.colors.BoundaryNorm(bounds, cmap2.N, extend='both')
+cmap3 = mpl.cm.terrain
+norm3 = mpl.colors.BoundaryNorm(bounds, cmap3.N, extend='both')
 
 
-# In[18]:
+cbar2 = fig.colorbar(mpl.cm.ScalarMappable(norm=norm2, cmap=cmap2), ax=axs.flat[2],
+                     ticks=unique_vals, orientation="horizontal")
+cbar3 = fig.colorbar(mpl.cm.ScalarMappable(norm=norm3, cmap=cmap3), ax=axs.flat[3], cmap="terrain",
+                     ticks=unique_vals, orientation="horizontal", shrink=0.9)
+cbar2.ax.set_xticklabels([f"#{ind+1}" for ind in range(len(unique_vals))]);  # horizontal colorbar
+cbar3.ax.set_xticklabels([f"#{ind+1}" for ind in range(len(unique_vals))]);  # horizontal colorbar
+
+#plt.colorbar(im3,ax=axs.flat[3], shrink=0.8)
 
 
-draw_separate_clusters(image.img,
-                       labelled=True)
+# In[15]:
 
 
-# In[ ]:
+img_file_num = 14000
 
-
-# create all the labelled data
-for sample in images:
-    filepath = f"C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/data/01_raw/Ergonautus/Full Dataset/{sample}"
-    name = sample.split(".")[0]
-    image_obj = EyeTraumaAnalysis.Image(filepath)
-    draw_separate_clusters(image_obj.img, filename=name, labelled=True, K_val=10)
-
-
-# In[ ]:
-
-
-target1[kmeans_thresholds[ind].astype(bool)]
-
-
-# In[ ]:
-
-
-image.img.shape
-
-
-# In[ ]:
-
-
-kmeans_thresholds[0].dtype
-
-
-# In[ ]:
-
-
-xgrid
-
-
-# In[ ]:
-
-
-type(xgrid)
-
-
-# In[ ]:
-
-
-type(image.img.copy())
+for img_file_num in range(14000,14580):
+    image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
+    img_bgr = image.img
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    centers, ranges, res_hsv, kmeans_masks = EyeTraumaAnalysis.create_kmeans(img_hsv)
+    masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
+    plt.imsave(f"data/02_kmeans/{img_file_num}.png", masks_summed)
 
 
 # In[ ]:
