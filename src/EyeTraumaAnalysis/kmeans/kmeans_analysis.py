@@ -8,7 +8,101 @@ from matplotlib import pyplot as plt
 import src.EyeTraumaAnalysis
 
 
-def create_kmeans(img, K=10, colorspace="HSV"):  #
+def hsv_float32_to_uint8(img):
+    """This converts from (0-360, 0-1, 0-1) range to (0-180, 0-255, 0-255) range
+    """
+    # NOTE: If you do cv2.cvtColor(.) to HSV on floats, the return HSV is from (0-360,0-1,0-1)
+    # If you do it on uint8s (aka unsigned integers), they will be (0-180, 0-255, 0-255) just like the input
+    # If you just do np.float32(.) or .astype(.) like below, then the original values are maintained
+    # docs: https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html#color_convert_rgb_hsv
+    img = img.copy()
+    img[...,0] = img[...,0] *180/360   # H
+    img[...,1] = img[...,1] *255   # S
+    img[...,2] = img[...,2] *255   # V
+    img = np.uint8(img)
+    return img
+
+
+def hsv_uint8_to_float32(img):
+    """This converts from (0-180, 0-255, 0-255) range to (0-360, 0-1, 0-1) range
+    """
+    # NOTE: If you do cv2.cvtColor(.) to HSV on floats, the return HSV is from (0-360,0-1,0-1)
+    # If you do it on uint8s (aka unsigned integers), they will be (0-180, 0-255, 0-255) just like the input
+    # If you just do np.float32(.) or .astype(.) like below, then the original values are maintained
+    # docs: https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html#color_convert_rgb_hsv
+    img = np.float32(img.copy())
+    img[...,0] = img[...,0] *360/180   # H
+    img[...,1] = img[...,1] /255   # S
+    img[...,2] = img[...,2] /255   # V
+    return img
+
+
+def create_kmeans(img, K=10, colorspace=None):  #
+    """
+    K is number of clusters
+    colorspace doesn't change the actual arrays, just the columns names for the pandas dataframe outputted
+    """
+    channels = img.shape[-1]
+    if colorspace is None:
+        if channels==3:
+            colorspace = "HSV"
+        elif channels==4:
+            colorspace = "BGRA"
+        else:
+            colorspace = "X" * channels
+
+    img_linear = img.reshape((-1,channels))  # flatten shape part, but keep color dimension
+    # NOTE: If you do cv2.cvtColor(.) from BGR/RGB to HSV:
+    #   If input is floats (either up to 255.0, 1.0, or anything else),
+    #   then the return will be floats in range (0-360,0-1,0-bgrmax)
+    #   If input is uint8s (aka unsigned integers, 0-255),
+    #   then the return will be uint8s in range (0-180,0-255,0-255) like the input except for H
+    # However, if you just do np.float32(.) or .astype(.) instead of cv2.cvtColor(.) , then the original values
+    # are maintained (i.e. 12 becomes 12.0 and H is not halved/doubled)
+    # docs: https://docs.opencv.org/4.7.0/de/d25/imgproc_color_conversions.html#color_convert_rgb_hsv
+    img_linear = np.float32(img_linear)  # kmeans requires float32 not float64
+
+    # Define criteria, arguments, and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    attempts = 10
+    compactness, labels, centers = cv2.kmeans(img_linear,K,None, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
+
+    # Now convert back into uint8 (if was uint8 originally), and make original image dimensions
+    if img.dtype == "uint8":  # uint8 is 0-255 (unsigned 8 bit integer)
+        centers = np.uint8(centers)
+    res_img_flat = centers[labels.flatten()]   # shouldn't need to flatten as should already by x by 1
+    res_img = res_img_flat.reshape(img.shape)
+    labels = labels.reshape(img.shape[:2])
+
+    # Sort centers by HSV "value" - aka sort by grayscale
+    if colorspace.upper() in ["HSV"]:
+        centers = centers[centers[:, 2].argsort()]
+        #centers_indices = np.argsort(centers, axis=0)   # sorts each column separately
+    elif colorspace.upper() in ["RGB","RGBA","BGR","BGRA"]:
+        v = np.max(centers[:, :3], axis=1)  # the :3 is to remove an alpha channel if it exists
+        centers = centers[v.argsort()]
+
+    kmeans_masks = []
+    for ind in range(K):
+        # Can use opencv inRange or kmeans
+        #kmeans_masks.append(cv2.inRange(res_img, centers[ind], centers[ind]))
+        #kmeans_masks.append( np.all(res_img == centers[ind], axis=-1) )
+        #kmeans_masks.append( res_img==centers[ind])
+        # Below version works for floats as well
+        kmeans_masks.append( labels == ind )
+    kmeans_masks = np.array(kmeans_masks)
+
+    # Couldn't make centers a DataFrame until now since needed numpy for opencv inRange or numpy comparison
+    centers = pd.DataFrame(centers, columns=list(colorspace))   # list(.) converts "HSV" to ["H","S","V"]
+    mins = pd.DataFrame([np.min(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks], columns=list(colorspace))
+    maxs = pd.DataFrame([np.min(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks], columns=list(colorspace))
+    clusters = pd.concat([centers,mins,maxs], axis=1, keys=["center","min","max"])
+    clusters[("ct","#")] = np.sum(kmeans_masks, axis=(1,2))
+    clusters[("ct","%")] = clusters[("ct","#")]/np.sum(clusters[("ct","#")])
+    return centers, kmeans_masks, res_img, clusters
+
+
+def create_kmeans_old(img, K=10, colorspace="HSV"):  #
     """
     K is number of clusters
     colorspace doesn't change the actual arrays, just the columns names for the pandas dataframe outputted
