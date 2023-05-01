@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[2]:
+# In[1]:
 
 
 import os
@@ -23,22 +23,16 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly
 
-
 if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this file is
     os.chdir("../..")  # go two folders upward (the if statement prevents error if cell is rerun)
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
 
-import src.EyeTraumaAnalysis
-
-print(directory_path)
-importlib.reload(src.EyeTraumaAnalysis);
-
 
 # # Load metrics
 
-# In[3]:
+# In[2]:
 
 
 all_metrics = pd.read_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics_p4" + ".pkl")
@@ -50,7 +44,7 @@ all_metrics_agg = pd.read_pickle("data/03_first_25percent_metrics/color_and_spat
 
 # ## Load data from excel
 
-# In[8]:
+# In[3]:
 
 
 kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correct_Values.xlsx", dtype={
@@ -65,24 +59,100 @@ kmeans_labels = pd.read_excel("data/01_raw/Ergonautus/Ergonautus_Clusters_Correc
 
 # ## Calculate metrics
 
-# In[12]:
+# In[65]:
 
 
-all_metrics = []
-all_kmeans_masks = {}
+def get_kmeans_metrics(clusters, kmeans_masks):
+    centers = clusters["center"]
+    ranges = clusters["max"] - clusters["min"]
+    spatial_metrics_list = [EyeTraumaAnalysis.get_spatial_metrics(kmeans_mask) for kmeans_mask in kmeans_masks]
+    spatial_metrics_pd = pd.concat([pd.DataFrame({
+        "x": [spatial_metrics["x"]["mean"] for spatial_metrics in spatial_metrics_list],
+        "y": [spatial_metrics["y"]["mean"] for spatial_metrics in spatial_metrics_list],}),
+        pd.DataFrame({
+        "x": [spatial_metrics["x"]["sd"] for spatial_metrics in spatial_metrics_list],
+        "y": [spatial_metrics["y"]["sd"] for spatial_metrics in spatial_metrics_list],
+    })], axis=1, keys=["Mean","SD"])
+
+    area_fractions = pd.DataFrame([np.count_nonzero(kmeans_mask)/np.prod(kmeans_mask.shape) for kmeans_mask in
+                               kmeans_masks], columns=pd.MultiIndex.from_tuples([("","")]))
+
+    color_metrics = pd.concat([centers, ranges], axis=1, keys=["Center","Range"])
+
+    all_metrics = pd.concat([color_metrics, spatial_metrics_pd, area_fractions], axis=1,
+                            keys=["Color","Location","Area"])
+    all_metrics_ranks = np.argsort(all_metrics, axis=0) + 1
+
+    return pd.concat([all_metrics, all_metrics_ranks], axis=1, keys=["Values","Ranks"])
+
+def return_unique_colors(img):
+    channels = 1 if len(img.shape)==2 else img.shape[2]
+    img_linear = img.reshape((-1,channels))
+    return np.unique(img_linear, axis=0)
+
+def recreate_kmeans(img, res_img, colorspace=None):
+    """
+    img is original image
+    res is the kmeans reconstruction
+    colorspace doesn't change the actual arrays, just the columns names for the pandas dataframe outputted
+    """
+    channels = img.shape[-1]
+    if colorspace is None:
+        if channels==3:
+            colorspace = "HSV"
+        elif channels==4:
+            colorspace = "BGRA"
+        else:
+            colorspace = "X" * channels
+
+    centers = return_unique_colors(res_img)
+    # Sort centers by HSV "value" - aka sort by grayscale
+    if colorspace.upper() in ["HSV"]:
+        centers = centers[centers[:, 2].argsort()]
+        #centers_indices = np.argsort(centers, axis=0)   # sorts each column separately
+    elif colorspace.upper() in ["RGB","RGBA","BGR","BGRA"]:
+        v = np.max(centers[:, :3], axis=1)  # the :3 is to remove an alpha channel if it exists
+        centers = centers[v.argsort()]
+
+    kmeans_masks = np.array([np.all(res_img == centers[ind], axis=2) for ind in range(centers.shape[0])])
+    mins = np.array([np.min(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
+    maxs = np.array([np.max(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
+
+    centers = pd.DataFrame(centers, columns=list(colorspace))   # list(.) converts "HSV" to ["H","S","V"]
+    mins = pd.DataFrame(mins, columns=list(colorspace))
+    maxs = pd.DataFrame(maxs, columns=list(colorspace))
+    clusters = pd.concat([centers,mins,maxs], axis=1, keys=["center","min","max"])
+    clusters[("ct","#")] = np.sum(kmeans_masks, axis=(1,2))
+    clusters[("ct","%")] = clusters[("ct","#")]/np.sum(clusters[("ct","#")])
+    return centers, kmeans_masks, res_img, clusters
+
+
+# In[78]:
+
+
+all_metrics_dict = {}
+all_kmeans_masks_dict = {}
 for ind, filename in enumerate(kmeans_labels["Filename"]):
+    filebase, exten = filename.rsplit(".",maxsplit=1)
     img_bgr = skimage.io.imread(os.path.join("data/01_raw/",filename))
-    centers, ranges, res_bgr, kmeans_masks = src.EyeTraumaAnalysis.kmeans.create_kmeans(img_bgr)
-    metrics = src.EyeTraumaAnalysis.kmeans.get_kmeans_metrics(centers, ranges, kmeans_masks)
-    all_metrics.append(metrics)
-    all_kmeans_masks[filename] = kmeans_masks
+    res_bgr = skimage.io.imread(os.path.join("data/02_kmeans/",f"{filebase}_kmeanscolor.{exten}"))
+    res_gry = skimage.io.imread(os.path.join("data/02_kmeans/",f"{filebase}_grayscale.{exten}"))
+    img_bgr = img_bgr[:,:,:3]  # remove alpha channel if it exists
+    res_bgr = res_bgr[:,:,:3]
 
-all_metrics = pd.concat(all_metrics, keys=kmeans_labels["Filename"])
+    img_hsv = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
+    res_hsv = cv2.cvtColor(res_bgr,cv2.COLOR_BGR2HSV)
+    #centers, kmeans_masks, _, clusters = recreate_kmeans(img_bgr, res_bgr, colorspace="BGR")
+    centers, kmeans_masks, _, clusters = recreate_kmeans(img_bgr, res_bgr, colorspace="HSV")
+    metrics = get_kmeans_metrics(clusters, kmeans_masks)
+    all_metrics_dict[filename] = metrics
+    all_kmeans_masks_dict[filename] = kmeans_masks
 
 
-# In[13]:
+# In[79]:
 
 
+all_metrics = pd.concat(all_metrics_dict)
 all_metrics.loc[:, ("Labels","Value","","")] = "False"
 all_metrics.loc[:, ("Labels","Correct","","")] = False
 all_metrics.loc[:, ("Labels","Borderline","","")] = False
@@ -109,7 +179,7 @@ all_metrics.index.names = [all_metrics.index.names[0], "Mask"]
 
 # ## Create aggregate version of metrics df
 
-# In[14]:
+# In[80]:
 
 
 all_metrics_agg = all_metrics.groupby([("Labels","Value")]).agg(["median"])[["Ranks","Values"]]
@@ -120,7 +190,7 @@ all_metrics_agg.to_excel("outputs/kmeans-descriptive/aggregate.xlsx")
 
 # ## Create flat version of metrics df
 
-# In[15]:
+# In[81]:
 
 
 all_metrics_flat = all_metrics.copy()
@@ -180,7 +250,7 @@ all_metrics_flat["Values-Color-Center-H360"] = all_metrics_flat["Values-Color-Ce
 
 # ## Save values so they don't have to be rerun every time
 
-# In[ ]:
+# In[82]:
 
 
 all_metrics.to_pickle("data/03_first_25percent_metrics/color_and_spatial_metrics" + ".pkl")
@@ -194,7 +264,7 @@ all_metrics_agg.to_excel("data/03_first_25percent_metrics/color_and_spatial_metr
 
 # # Prepare for plotting
 
-# In[106]:
+# In[4]:
 
 
 default_plotly_save_scale = 4
@@ -370,13 +440,7 @@ def rotate_z(x, y, z, theta):
     return np.real(np.exp(1j*theta)*w), np.imag(np.exp(1j*theta)*w), z
 
 
-# In[ ]:
-
-
-
-
-
-# In[32]:
+# In[5]:
 
 
 color_discrete_map = {
@@ -451,12 +515,12 @@ point_hover_data = {
     "Ranks-Location-SD-xy":True,
 }
 
-plotly_template = "simple_white"  #"simple_white"
+plotly_template = "plotly_dark"  #"simple_white"  #"plotly_dark"
 
 
 # # Plot
 
-# In[107]:
+# In[6]:
 
 
 title = "Center V box plot"
@@ -471,7 +535,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[108]:
+# In[7]:
 
 
 title = "HSV scatterplot- H center vs V center"
@@ -493,7 +557,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[109]:
+# In[8]:
 
 
 title = "HSV scatter matrix- HSV center"
@@ -508,7 +572,7 @@ fig.show()
 #save_plotly_figure(fig, title)
 
 
-# In[110]:
+# In[9]:
 
 
 title = "HSV scatter matrix- HSV center"
@@ -522,7 +586,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[98]:
+# In[10]:
 
 
 title = "HSV 3D scatter- HSV center"
@@ -608,7 +672,7 @@ fig.frames=frames
 fig.show()
 
 
-# In[ ]:
+# In[11]:
 
 
 fig = px.scatter_polar(all_metrics_flat, theta="Ranks-Color-Center-H360", r="Ranks-Color-Center-S",
@@ -620,13 +684,7 @@ fig.update_traces(marker=dict(size=4, opacity=0.8))
 fig.show()
 
 
-# In[101]:
-
-
-plotly_template = "plotly_dark"
-
-
-# In[113]:
+# In[12]:
 
 
 title = "HSV polar scatter- H by S"
@@ -650,7 +708,7 @@ save_plotly_figure(fig, title)
 fig.show()
 
 
-# In[114]:
+# In[13]:
 
 
 title = "HSV histogram with box plot- H val"
@@ -684,7 +742,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[112]:
+# In[14]:
 
 
 title = "HSV histogram with box plot- H rank"
@@ -720,7 +778,7 @@ fig.show()
 save_plotly_figure(fig, title)
 
 
-# In[115]:
+# In[15]:
 
 
 title = "Location scatter matrix"
@@ -734,7 +792,7 @@ fig.show()
 save_plotly_figure(fig,title)
 
 
-# In[116]:
+# In[16]:
 
 
 all_metrics_flat2 = all_metrics_flat[all_metrics_flat["Ranks-Color-Center-V"] >= 4]

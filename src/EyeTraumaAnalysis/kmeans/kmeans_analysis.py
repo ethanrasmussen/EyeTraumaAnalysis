@@ -95,7 +95,8 @@ def create_kmeans(img, K=10, colorspace=None):  #
     # Couldn't make centers a DataFrame until now since needed numpy for opencv inRange or numpy comparison
     centers = pd.DataFrame(centers, columns=list(colorspace))   # list(.) converts "HSV" to ["H","S","V"]
     mins = pd.DataFrame([np.min(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks], columns=list(colorspace))
-    maxs = pd.DataFrame([np.min(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks], columns=list(colorspace))
+    maxs = pd.DataFrame([np.max(img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks], columns=list(colorspace))
+    ranges = pd.DataFrame(maxs - mins, columns=list(colorspace))
     clusters = pd.concat([centers,mins,maxs], axis=1, keys=["center","min","max"])
     clusters[("ct","#")] = np.sum(kmeans_masks, axis=(1,2))
     clusters[("ct","%")] = clusters[("ct","#")]/np.sum(clusters[("ct","#")])
@@ -136,7 +137,7 @@ def create_kmeans_old(img, K=10, colorspace="HSV"):  #
     # Couldn't make centers a DataFrame until now since needed numpy for opencv inRange or numpy comparison
     centers = pd.DataFrame(centers, columns=list(colorspace))   # list(.) converts "HSV" to ["H","S","V"]
     mins = np.array([np.min(res_img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
-    maxs = np.max([np.min(res_img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
+    maxs = np.max([np.max(res_img[kmeans_mask],axis=0) for kmeans_mask in kmeans_masks])
     ranges = pd.DataFrame(maxs - mins, columns=list(colorspace))
     return centers, ranges, res_img, kmeans_masks
 
@@ -190,7 +191,7 @@ def reverse_clustered_image(image_path, K=10):
     print(summed_image.shape)
 
     mins = np.array([np.min(summed_image, where=kmeans_mask.astype(bool), axis=(0,1)) for kmeans_mask in masks])
-    maxs = np.max([np.min(summed_image, where=kmeans_mask.astype(bool), axis=(0,1)) for kmeans_mask in masks])
+    maxs = np.max([np.max(summed_image, where=kmeans_mask.astype(bool), axis=(0,1)) for kmeans_mask in masks])
     ranges = pd.DataFrame(maxs - mins, columns=["H", "S", "V"])
 
     return centers, ranges, masks
