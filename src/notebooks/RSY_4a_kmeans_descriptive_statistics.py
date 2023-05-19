@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[1]:
+# In[ ]:
 
 
 import os
@@ -28,6 +28,8 @@ if os.getcwd().split("/")[-1] == "notebooks":  # if cwd is located where this fi
 directory_path = os.path.abspath(os.path.join("src"))
 if directory_path not in sys.path:
     sys.path.append(directory_path)
+
+import EyeTraumaAnalysis
 
 
 # # Load metrics

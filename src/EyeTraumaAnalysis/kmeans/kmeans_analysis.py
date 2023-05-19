@@ -37,10 +37,14 @@ def hsv_uint8_to_float32(img):
     return img
 
 
-def create_kmeans(img, K=10, colorspace=None):  #
+def create_kmeans(img, colorspace=None, K=10, max_iter=10, epsilon=1.0, attempts=10, return_compactness=False):
     """
-    K is number of clusters
     colorspace doesn't change the actual arrays, just the columns names for the pandas dataframe outputted
+    K is number of clusters ("k means")
+    max_iter
+    epsilon
+    attempts: Flag to specify the number of times the algorithm is executed using different initial labellings. The 
+    algorithm returns the labels that yield the best compactness.
     """
     channels = img.shape[-1]
     if colorspace is None:
@@ -63,8 +67,7 @@ def create_kmeans(img, K=10, colorspace=None):  #
     img_linear = np.float32(img_linear)  # kmeans requires float32 not float64
 
     # Define criteria, arguments, and apply kmeans()
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    attempts = 10
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
     compactness, labels, centers = cv2.kmeans(img_linear,K,None, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
 
     # Now convert back into uint8 (if was uint8 originally), and make original image dimensions
@@ -100,7 +103,10 @@ def create_kmeans(img, K=10, colorspace=None):  #
     clusters = pd.concat([centers,mins,maxs], axis=1, keys=["center","min","max"])
     clusters[("ct","#")] = np.sum(kmeans_masks, axis=(1,2))
     clusters[("ct","%")] = clusters[("ct","#")]/np.sum(clusters[("ct","#")])
-    return centers, kmeans_masks, res_img, clusters
+    if return_compactness:
+        return centers, kmeans_masks, res_img, clusters, compactness
+    else:
+        return centers, kmeans_masks, res_img, clusters
 
 
 def create_kmeans_old(img, K=10, colorspace="HSV"):  #

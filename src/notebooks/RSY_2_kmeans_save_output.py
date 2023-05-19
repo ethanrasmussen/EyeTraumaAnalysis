@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[2]:
+# In[ ]:
 
 
 import os
@@ -42,7 +42,7 @@ import EyeTraumaAnalysis
 
 # # Test how cv2.cvtColor(.) works with regards to uint8 vs float input
 
-# In[4]:
+# In[3]:
 
 
 img_file_num = 14000
@@ -108,7 +108,7 @@ a2m,b2m=np.max(a2, axis=(0,1)), np.max(b2, axis=(0,1))
 
 # # Display subplot analysis
 
-# In[8]:
+# In[2]:
 
 
 def plot_kmeans_subplots_view(img_bgr, res_bgr, masks_summed):
@@ -157,10 +157,56 @@ def plot_kmeans_subplots_view_simple(img_bgr, res_bgr, masks_summed):
     cbar2.ax.set_xticklabels([f"#{ind+1}" for ind in range(len(unique_vals))]);  # horizontal colorbar
     plt.tight_layout()
 
+def plot_per_cluster_masking(centers, kmeans_masks):
+    K = kmeans_masks.shape[0]
+    centers_indices = np.argsort(centers, axis=0)  # get ranks
+
+    row_ct = int(np.sqrt(K))
+    col_ct = int(np.ceil(K/row_ct))
+    fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
+    for ind in range(row_ct*col_ct):
+        if ind < K:
+            target1 = image.img.copy()
+            target1[kmeans_masks[ind].astype(bool)] = [127,255,127,255]   # bright green
+            axs.flat[ind].imshow(target1)
+
+            spatial_metrics = EyeTraumaAnalysis.get_spatial_metrics(kmeans_masks[ind])
+            hsv_center = centers.iloc[ind]
+            hsv_rank = centers_indices.iloc[ind]
+            area_pct = np.sum(kmeans_masks[ind]) / np.product(kmeans_masks[ind].shape)
+
+            # Draw left title
+            axs.flat[ind].set_title(
+                "  COLOR:" + "\n" +
+                " H , S , V " + "\n" +
+                f"#{hsv_rank[0]+1:.0f}, #{hsv_rank[1]+1:.0f}, #{hsv_rank[2]+1:.0f}" + "\n" +
+                f"{hsv_center[0]:>2.0f}, {hsv_center[1]:>2.0f}, {hsv_center[2]:>2.0f}",
+                fontsize=8, loc="left", fontfamily="monospace",
+            )
+            # Draw right title
+            axs.flat[ind].set_title(
+                f"LOCATION:   " + "\n"+
+                f"μ: ({spatial_metrics['x']['mean']:5.1%}, {spatial_metrics['y']['mean']:5.1%})" + "\n" +
+                f"σ: ({spatial_metrics['x']['sd']:5.1%}, {spatial_metrics['y']['sd']:5.1%})" + "\n" +
+                f"Area: {area_pct:^6.2%}",
+                fontsize=8, loc="right", fontfamily="monospace",
+            )
+            # Draw center title
+            axs.flat[ind].set_title(
+                f"#{hsv_rank[2]+1:.0f}  ",
+                fontsize=16, loc="center",fontweight="bold",
+            )
+        else:
+            axs.flat[ind].axis("off")  # remove axes for empty cells
+        # save axis as singular image
+        if ind < 10:
+            extent = axs.flat[ind].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    plt.tight_layout()
+
 
 # # Test running kmeans on different colorspaces and flaot vs uint8
 
-# In[9]:
+# In[3]:
 
 
 img_file_num = 14000
@@ -185,20 +231,21 @@ with pd.option_context("display.precision", 3, "display.width",100):
 
 # ## Run on HSV when BGR is float32 from 0-255  - winner!
 
-# In[30]:
+# In[5]:
 
 
 image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
 img_bgr = image.img
 # HSV floats are from (0-360,0-1,0-1) while uint8s are 0-255 for all channels
 img_hsv = cv2.cvtColor(np.float32(img_bgr), cv2.COLOR_BGR2HSV)  # needs to be float32, not the default float64
-centers, kmeans_masks, res_hsv, clusters = EyeTraumaAnalysis.create_kmeans(img_hsv)
+centers, kmeans_masks, res_hsv, clusters = EyeTraumaAnalysis.create_kmeans(img_hsv, max_iter=100)
 masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
 res_bgr = np.uint8(cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR))
-plot_kmeans_subplots_view_simple(img_bgr, res_bgr, masks_summed)
+#plot_kmeans_subplots_view_simple(img_bgr, res_bgr, masks_summed)
+plot_per_cluster_masking(centers, kmeans_masks)
 
 with pd.option_context("display.precision", 3, "display.width",100):
-    print(clusters)
+    pass #print(clusters)
 
 
 # ##  Run on HSV when BGR is float32 from 0-1
@@ -253,24 +300,6 @@ print(centers)
 
 # # Run and save on all images
 
-# In[50]:
-
-
-np.sum(kmeans_masks[0])
-
-
-# In[53]:
-
-
-np.product(kmeans_masks[0].shape)
-
-
-# In[54]:
-
-
-spatial_metrics
-
-
 # In[71]:
 
 
@@ -283,7 +312,6 @@ for img_file_num in range(14000,14580):
     centers, kmeans_masks, res_hsv, clusters = EyeTraumaAnalysis.create_kmeans(img_hsv)
     masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
     res_bgr = np.uint8(cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR))
-    centers_indices = np.argsort(centers, axis=0)  # get ranks
 
     # Save actual kmeans images
     plt.imsave(f"data/02_kmeans/{img_file_num}_kmeanscolor.png", np.uint8(res_bgr))
@@ -292,59 +320,12 @@ for img_file_num in range(14000,14580):
 
     ## Save Clustered View figure
     plot_kmeans_subplots_view(img_bgr, res_bgr, masks_summed)
-    """fig, axs = plt.subplots(2, 2, figsize=(12,6))
-    im0=axs.flat[0].imshow(img_bgr)
-    im1=axs.flat[1].imshow(res_bgr)
-    im2=axs.flat[2].imshow(masks_summed, cmap="gray")
-    im3=axs.flat[3].imshow(masks_summed, cmap="terrain")
-    plt.colorbar(im3,ax=axs.flat[3], shrink=0.8)"""
-    plt.savefig(f"outputs/clustered_view/{img_file_num}_clustered_view.png", format="png")
+    plt.savefig(f"outputs/kmeans-clusters/clustered_view/{img_file_num}_clustered_view.png", format="png")
     plt.close()  # close to prevent overconsumption of memory
 
     ## Save Per Cluster Masking figure
-    K = kmeans_masks.shape[0]
-    row_ct = int(np.sqrt(K))
-    col_ct = int(np.ceil(K/row_ct))
-    fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
-    for ind in range(row_ct*col_ct):
-        if ind < K:
-            target1 = image.img.copy()
-            target1[kmeans_masks[ind].astype(bool)] = [127,255,127,255]   # bright green
-            axs.flat[ind].imshow(target1)
-
-            spatial_metrics = EyeTraumaAnalysis.get_spatial_metrics(kmeans_masks[ind])
-            hsv_center = centers.iloc[ind]
-            hsv_rank = centers_indices.iloc[ind]
-            area_pct = np.sum(kmeans_masks[ind]) / np.product(kmeans_masks[ind].shape)
-
-            # Draw left title
-            axs.flat[ind].set_title(
-                "  COLOR:" + "\n" +
-                " H , S , V " + "\n" +
-                f"#{hsv_rank[0]+1:.0f}, #{hsv_rank[1]+1:.0f}, #{hsv_rank[2]+1:.0f}" + "\n" +
-                f"{hsv_center[0]:>2.0f}, {hsv_center[1]:>2.0f}, {hsv_center[2]:>2.0f}",
-                fontsize=8, loc="left", fontfamily="monospace",
-            )
-            # Draw right title
-            axs.flat[ind].set_title(
-                f"LOCATION:   " + "\n"+
-                f"μ: ({spatial_metrics['x']['mean']:5.1%}, {spatial_metrics['y']['mean']:5.1%})" + "\n" +
-                f"σ: ({spatial_metrics['x']['sd']:5.1%}, {spatial_metrics['y']['sd']:5.1%})" + "\n" +
-                f"Area: {area_pct:^6.2%}",
-                fontsize=8, loc="right", fontfamily="monospace",
-            )
-            # Draw center title
-            axs.flat[ind].set_title(
-                f"#{hsv_rank[2]+1:.0f}  ",
-                fontsize=16, loc="center",fontweight="bold",
-            )
-        else:
-            axs.flat[ind].axis("off")  # remove axes for empty cells
-        # save axis as singular image
-        if ind < 10:
-            extent = axs.flat[ind].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    plt.tight_layout()
-    plt.savefig(f"outputs/per_cluster_mask/{img_file_num}_per_cluster_mask.png", format="png")
+    plot_per_cluster_masking(centers, kmeans_masks)
+    plt.savefig(f"outputs/kmeans-clusters/per_cluster_mask/{img_file_num}_per_cluster_mask.png", format="png")
     plt.close()  # close to prevent overconsumption of memory
 
 
