@@ -137,13 +137,14 @@ all_kmeans_masks_dict = {}
 for ind, filename in enumerate(kmeans_labels["Filename"]):
     filebase, exten = filename.rsplit(".",maxsplit=1)
     img_bgr = skimage.io.imread(os.path.join("data/01_raw/",filename))
-    res_bgr = skimage.io.imread(os.path.join("data/02_kmeans/",f"{filebase}_kmeanscolor.{exten}"))
+    res_bgr = skimage.io.imread(os.path.join("data/02_kmeans/",f"{filebase}_kmeans_color.{exten}"))
+    res_hsv = skimage.io.imread(os.path.join("data/02_kmeans/",f"{filebase}_kmeans_hsv.{exten}"))
     res_gry = skimage.io.imread(os.path.join("data/02_kmeans/",f"{filebase}_grayscale.{exten}"))
     img_bgr = img_bgr[:,:,:3]  # remove alpha channel if it exists
     res_bgr = res_bgr[:,:,:3]
 
     img_hsv = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
-    res_hsv = cv2.cvtColor(res_bgr,cv2.COLOR_BGR2HSV)
+    
     #centers, kmeans_masks, _, clusters = recreate_kmeans(img_bgr, res_bgr, colorspace="BGR")
     centers, kmeans_masks, _, clusters = recreate_kmeans(img_bgr, res_bgr, colorspace="HSV")
     metrics = get_kmeans_metrics(clusters, kmeans_masks)

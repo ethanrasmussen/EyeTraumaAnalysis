@@ -353,3 +353,43 @@ def calculate_roc(truths, predict_scores, true_value=None, comparator=None):
         return calculate_roc(truths, predict_scores, true_value=None, comparator=comparator_opposite)
     else:
         return roc_df, auc, comparator
+
+def ergonautas_file_num_old_to_new(file_num:int):
+    """Old system skipped 205 (went directly from 204 to 206)"""
+    if 0 <= file_num < 205:
+        return file_num + 14000
+    elif 205 < file_num <= 580:
+        return file_num + 14000 -1
+    else:
+        assert False, f"ergonautas file_num of {file_num} outside appropriate range"
+def ergonautas_file_num_to_race(file_num:int, old_system=False):
+    """
+    OLD SYSTEM (skipped 205 aka went directly from 204 to 206):
+    AE:   0-103 (n=104),
+    BE: 104-290 (n=186),
+    LE: 291-394 (n=104),
+    WE: 395-580 (n=186)
+
+    NEW SYSTEM - since Feb 6, 2023
+    AE: 14000-14103 (n=104),
+    BE: 14104-14289 (n=186),
+    LE: 14290-14393 (n=104),
+    WE: 14394-14579 (n=186)
+
+    Note: it is spelled "ergonautas", not "ergonautus"
+    """
+    if old_system:
+        file_num = ergonautas_file_num_old_to_new(file_num)
+
+    # These are the racial classifications and terminology from the original paper
+    if   14000 <= file_num <= 14103:
+        return "AE", "Asian"  # "Asian
+    elif 14104 <= file_num <= 14289:
+        return "BE", "Black"  # Black
+    elif 14290 <= file_num <= 14393:
+        return "LE", "Latino"  # Latino
+    elif 14394 <= file_num <= 14579:
+        return "WE", "White"  # White
+    else:
+        assert False, f"ergonautas file_num of {file_num} (new system) outside appropriate range"
+

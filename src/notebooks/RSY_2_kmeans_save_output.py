@@ -3,7 +3,7 @@
 
 # # Imports
 
-# In[ ]:
+# In[1]:
 
 
 import os
@@ -40,9 +40,10 @@ print(directory_path)
 import EyeTraumaAnalysis
 
 
-# # Test how cv2.cvtColor(.) works with regards to uint8 vs float input
+# # Test how cv2.cvtColor(.) works when input is uint8 vs float32
+# Note: float64 is not supported by opencv kmeans so preemptively using float32 only
 
-# In[3]:
+# In[5]:
 
 
 img_file_num = 14000
@@ -108,7 +109,7 @@ a2m,b2m=np.max(a2, axis=(0,1)), np.max(b2, axis=(0,1))
 
 # # Display subplot analysis
 
-# In[2]:
+# In[73]:
 
 
 def plot_kmeans_subplots_view(img_bgr, res_bgr, masks_summed):
@@ -157,7 +158,22 @@ def plot_kmeans_subplots_view_simple(img_bgr, res_bgr, masks_summed):
     cbar2.ax.set_xticklabels([f"#{ind+1}" for ind in range(len(unique_vals))]);  # horizontal colorbar
     plt.tight_layout()
 
-def plot_per_cluster_masking(centers, kmeans_masks):
+def plot_per_cluster_masking(img_bgr, centers, kmeans_masks, src_info={},
+                             color=[127,255,127,255],  # bright green
+                             ):
+    ch = img_bgr.shape[2]
+    if color is None:
+        if ch==4:
+            color = [127,255,127,255]  # bright green
+        elif ch==3:
+            color = [127,255,127]      # bright green
+        else:
+            color = [127] * ch   # gray
+
+    if src_info.get("file_num") is not None:
+        img_file_num = src_info.get("file_num")
+        img_race_abbr, img_race_long = EyeTraumaAnalysis.ergonautas_file_num_to_race(img_file_num)
+
     K = kmeans_masks.shape[0]
     centers_indices = np.argsort(centers, axis=0)  # get ranks
 
@@ -166,8 +182,8 @@ def plot_per_cluster_masking(centers, kmeans_masks):
     fig, axs = plt.subplots(row_ct, col_ct, figsize=(12,6), sharex=True, sharey=True)
     for ind in range(row_ct*col_ct):
         if ind < K:
-            target1 = image.img.copy()
-            target1[kmeans_masks[ind].astype(bool)] = [127,255,127,255]   # bright green
+            target1 = img_bgr.copy()   # the background is the original image
+            target1[kmeans_masks[ind].astype(bool)] = color
             axs.flat[ind].imshow(target1)
 
             spatial_metrics = EyeTraumaAnalysis.get_spatial_metrics(kmeans_masks[ind])
@@ -177,10 +193,10 @@ def plot_per_cluster_masking(centers, kmeans_masks):
 
             # Draw left title
             axs.flat[ind].set_title(
-                "  COLOR:" + "\n" +
-                " H , S , V " + "\n" +
-                f"#{hsv_rank[0]+1:.0f}, #{hsv_rank[1]+1:.0f}, #{hsv_rank[2]+1:.0f}" + "\n" +
-                f"{hsv_center[0]:>2.0f}, {hsv_center[1]:>2.0f}, {hsv_center[2]:>2.0f}",
+                "   COLOR:" + "\n" +
+                " H ,  S ,  V " + "\n" +
+                f"#{hsv_rank[0]+1:<2.0f}, #{hsv_rank[1]+1:<2.0f}, #{hsv_rank[2]+1:<2.0f}" + "\n" +
+                f"{hsv_center[0]:^3.0f}, {hsv_center[1]:^3.0f}, {hsv_center[2]:^3.0f}",
                 fontsize=8, loc="left", fontfamily="monospace",
             )
             # Draw right title
@@ -188,7 +204,7 @@ def plot_per_cluster_masking(centers, kmeans_masks):
                 f"LOCATION:   " + "\n"+
                 f"μ: ({spatial_metrics['x']['mean']:5.1%}, {spatial_metrics['y']['mean']:5.1%})" + "\n" +
                 f"σ: ({spatial_metrics['x']['sd']:5.1%}, {spatial_metrics['y']['sd']:5.1%})" + "\n" +
-                f"Area: {area_pct:^6.2%}",
+                f"AREA: {area_pct:^6.2%}",
                 fontsize=8, loc="right", fontfamily="monospace",
             )
             # Draw center title
@@ -196,23 +212,46 @@ def plot_per_cluster_masking(centers, kmeans_masks):
                 f"#{hsv_rank[2]+1:.0f}  ",
                 fontsize=16, loc="center",fontweight="bold",
             )
-        else:
+        else:  # if cell is empty
             axs.flat[ind].axis("off")  # remove axes for empty cells
+            if ind == row_ct*col_ct-1:  # if the last cell
+                img_file_num = src_info.get("file_num")
+                if img_file_num is not None:
+                    dim = "x".join([str(n) for n in img_bgr.shape])
+                    """axs.flat[ind].annotate(
+                        f"Filename: {img_file_num}.png" + "\n" +
+                        f"Race: {img_race_abbr} ({img_race_long})" + "\n" +
+                        f"Dim: {dim}" + "\n" +
+                        f"K={K}" ,
+                        (0, 0), fontsize=16,
+                        xycoords="axes fraction",va="bottom",ha="left")"""
+                    axs.flat[ind].annotate(
+                        f"{img_file_num}.png",
+                        (0.5, 0.55), fontsize=24, fontweight="bold",
+                        xycoords="axes fraction",va="bottom",ha="center")
+                    axs.flat[ind].annotate(
+                        f"Dimensions: {dim}" + "\n" +
+                        f"Race: {img_race_long}" + "\n" +
+                        f"K: {K}" ,
+                        (0.5, 0.5), fontsize=12, fontfamily="monospace",
+                        xycoords="axes fraction",va="top",ha="center")
+
         # save axis as singular image
         if ind < 10:
             extent = axs.flat[ind].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
     plt.tight_layout()
 
 
-# # Test running kmeans on different colorspaces and flaot vs uint8
+# # Test running kmeans on different colorspaces and uint8 vs uint32
+# Note: float64 is not supported by opencv kmeans so using float32 only
 
-# In[3]:
+# In[71]:
 
 
 img_file_num = 14000
 
 
-# ## Run on HSV when BGR is uint8
+# ## Run on HSV when BGR is uint8 -- winner!
 
 # In[15]:
 
@@ -229,9 +268,11 @@ with pd.option_context("display.precision", 3, "display.width",100):
     print(clusters)
 
 
-# ## Run on HSV when BGR is float32 from 0-255  - winner!
+# ## Run on HSV when BGR is float32 from 0-255
+# I liked it and originally chose it as a winner to avoid rounding error, but it turned out to be significantly less
+# accurate in the per_cluster_mask.png output files.
 
-# In[5]:
+# In[7]:
 
 
 image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
@@ -242,15 +283,38 @@ centers, kmeans_masks, res_hsv, clusters = EyeTraumaAnalysis.create_kmeans(img_h
 masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
 res_bgr = np.uint8(cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR))
 #plot_kmeans_subplots_view_simple(img_bgr, res_bgr, masks_summed)
-plot_per_cluster_masking(centers, kmeans_masks)
+plot_per_cluster_masking(img_bgr, centers, kmeans_masks, src_info={"file_num":img_file_num})
 
 with pd.option_context("display.precision", 3, "display.width",100):
     pass #print(clusters)
 
 
 # ##  Run on HSV when BGR is float32 from 0-1
+# This should work, but the clusters were all weird for some reason.
 
-# In[17]:
+# In[20]:
+
+
+np.max(img_hsv, axis=(0,1))
+
+
+# In[28]:
+
+
+a=np.float32(img_bgr) /255
+img_hsv = cv2.cvtColor(a, cv2.COLOR_BGR2HSV)  # needs to be float32, not the default float64
+img_hsv = img_hsv / np.array([360,1,1])
+np.vstack((np.min(img_hsv, axis=(0,1)), np.max(img_hsv, axis=(0,1))))
+
+
+# In[ ]:
+
+
+a=np.float32(img_bgr) / np.array([360,])
+np.vstack((np.min(img_hsv, axis=(0,1)), np.max(img_hsv, axis=(0,1))))
+
+
+# In[19]:
 
 
 image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
@@ -259,6 +323,39 @@ img_hsv = cv2.cvtColor(np.float32(img_bgr)/255.0, cv2.COLOR_BGR2HSV)  # needs to
 centers, kmeans_masks, res_hsv, clusters  = EyeTraumaAnalysis.create_kmeans(img_hsv)
 masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
 res_bgr = np.uint8((cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR)) *255)
+plot_kmeans_subplots_view_simple(img_bgr, res_bgr, masks_summed)
+
+
+# In[32]:
+
+
+np.vstack((np.min(img_hsv, axis=(0,1)), np.max(img_hsv, axis=(0,1))))
+
+
+# ##  Run on HSV when BGR is float32 from 0-1 and then H is converted from 0-360.0 to 0-1.0
+
+# In[39]:
+
+
+res_hsv.dtype
+
+
+# In[3]:
+
+
+(np.array([360,1,1],dtype="float32")*res_hsv).dtype
+
+
+# In[36]:
+
+
+image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
+img_bgr = image.img
+# needs to be float32, not the default float64
+img_hsv = cv2.cvtColor(np.float32(img_bgr)/255.0, cv2.COLOR_BGR2HSV) / np.array([360,1,1])
+centers, kmeans_masks, res_hsv, clusters  = EyeTraumaAnalysis.create_kmeans(img_hsv)
+masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
+res_bgr = np.uint8((cv2.cvtColor(res_hsv *np.array([360,1,1]), cv2.COLOR_HSV2BGR)) *255)
 plot_kmeans_subplots_view_simple(img_bgr, res_bgr, masks_summed)
 
 
@@ -300,7 +397,7 @@ print(centers)
 
 # # Run and save on all images
 
-# In[71]:
+# In[ ]:
 
 
 print("Saved... ", end="")
@@ -308,13 +405,14 @@ for img_file_num in range(14000,14580):
     image = EyeTraumaAnalysis.Image(f"data/01_raw/{img_file_num}.png")
     img_bgr = image.img
     # HSV floats are from (0-360,0-1,0-1) while uint8s are 0-255 for all channels
-    img_hsv = cv2.cvtColor(np.float32(img_bgr), cv2.COLOR_BGR2HSV)  # needs to be float32, not the default float64
+    img_hsv = cv2.cvtColor( img_bgr, cv2.COLOR_BGR2HSV)  # needs to be float32, not the default float64
     centers, kmeans_masks, res_hsv, clusters = EyeTraumaAnalysis.create_kmeans(img_hsv)
     masks_summed = EyeTraumaAnalysis.get_masked_sums(kmeans_masks)
-    res_bgr = np.uint8(cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR))
+    res_bgr = cv2.cvtColor(res_hsv, cv2.COLOR_HSV2BGR)
 
     # Save actual kmeans images
-    plt.imsave(f"data/02_kmeans/{img_file_num}_kmeanscolor.png", np.uint8(res_bgr))
+    plt.imsave(f"data/02_kmeans/{img_file_num}_kmeans_color.png", np.uint8(res_bgr))
+    plt.imsave(f"data/02_kmeans/{img_file_num}_kmeans_hsv.png", np.uint8(res_hsv))
     plt.imsave(f"data/02_kmeans/{img_file_num}_grayscale.png", masks_summed)
     print(img_file_num, end=" ")
 
@@ -324,7 +422,7 @@ for img_file_num in range(14000,14580):
     plt.close()  # close to prevent overconsumption of memory
 
     ## Save Per Cluster Masking figure
-    plot_per_cluster_masking(centers, kmeans_masks)
+    plot_per_cluster_masking(img_bgr, centers, kmeans_masks)
     plt.savefig(f"outputs/kmeans-clusters/per_cluster_mask/{img_file_num}_per_cluster_mask.png", format="png")
     plt.close()  # close to prevent overconsumption of memory
 
@@ -535,16 +633,4 @@ for image_sample in images:
 
     # close to prevent overconsumption of memory
     plt.close()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
