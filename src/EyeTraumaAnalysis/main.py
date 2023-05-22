@@ -15,6 +15,7 @@ try:
     else:
         prepath = ""
     # Get pupil center data for images from excel
+    prepath = "C:/Users/ethan/PycharmProjects/EyeTraumaAnalysis/"
     # opencv function cv2.getRotationMatrix2D gives an error if center input is np.int64 instead of python raw int or float
     li_df = pd.read_excel(prepath+"data/01_raw/data_li.xlsx", dtype={"centerX":float, "centerY":float})
     h_df = pd.read_excel(prepath+"data/01_raw/data_h.xlsx", dtype={"centerX":float, "centerY":float})
